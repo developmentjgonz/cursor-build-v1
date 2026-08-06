@@ -1,6 +1,6 @@
 # PRD: Natural Language Trading on Solana
 
-**Team:** Rucrsion  
+**Team:** The Recursion  
 **Repo:** https://github.com/developmentjgonz/cursor-build-v1  
 **Live demo:** https://cursor-build-v1.vercel.app
 

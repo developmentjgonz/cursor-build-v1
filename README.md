@@ -1,6 +1,6 @@
 # cursor-build-v1
 
-Team **Rucrsion** — **Solana Agent**: natural-language trading on Solana.
+Team **The Recursion** — **Solana Agent**: natural-language trading on Solana.
 
 ## Product
 
