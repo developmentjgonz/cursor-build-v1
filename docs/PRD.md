@@ -1,260 +1,269 @@
-# PRD: Natural Language Trading on Solana
+# PRD: Dilo — Natural Language Financial Actions on Solana
 
+**Hackathon:** Superteam x QuickNode  
+**Product:** Dilo  
 **Team:** The Recursion  
+**Status:** Hackathon MVP  
 **Repo:** https://github.com/developmentjgonz/cursor-build-v1  
 **Live demo:** https://cursor-build-v1.vercel.app
 
-## Product
+## Overview
 
-**Working name:** Solana Agent
+**Dilo** is a natural-language interface for financial actions on Solana.
+
+Instead of navigating wallets, DEXs, prediction markets, token pairs, routes, slippage, and fees, users simply describe what they want to do.
+
+Examples:
+
+> “Swap $5 of SOL into USDC.”
+
+> “Cambia el 10% de mi SOL a USDC.”
+
+> “Put $2 on YES that this event happens.”
+
+Dilo understands the user's intent, retrieves real blockchain and market data, shows exactly what will happen, and lets the user approve and sign the transaction from their own wallet.
 
 **One-line pitch:**
-Talk to your wallet. Ask for a trade in plain English, review the transaction, and sign it yourself.
+
+**Say what you want to do on Solana. Review it. Sign it. Done.**
+
+---
 
 ## Problem
 
-Trading tokens on Solana still requires users to understand wallets, token pairs, DEX interfaces, slippage, routing, and transaction fees.
+Solana is fast and inexpensive, but interacting with it is still designed primarily for crypto-native users.
 
-For someone who simply wants to say:
+Users are expected to understand:
 
-> “Swap $10 of SOL for USDC.”
+* Wallets
+* Tokens
+* DEX interfaces
+* Slippage
+* Routes
+* Transaction fees
+* Prediction-market interfaces
+* Blockchain signing
 
-the experience is unnecessarily complicated.
+Most people don't care about the infrastructure.
 
-At the same time, many AI crypto products stop at answering questions instead of actually interacting with the blockchain.
+They care about outcomes:
+
+> “Put $10 into SOL.”
+
+> “Convert 20% of my SOL to USDC.”
+
+> “Put $5 on YES for this prediction.”
+
+Dilo removes the gap between **human intent** and an **on-chain financial action**.
+
+---
 
 ## Solution
 
-Build an AI-native Solana wallet interface where users can perform basic trading actions using natural language.
+Dilo acts as an **intent layer for Solana**.
 
-The user connects their wallet and can say things like:
+The AI interprets what the user wants and converts it into a structured action.
 
-* “How much SOL do I have?”
-* “What's SOL worth right now?”
-* “Swap $10 of SOL into USDC.”
-* “How much BONK can I get for 0.1 SOL?”
+Deterministic application logic validates the request and uses QuickNode and integrated Solana protocols to prepare the transaction.
 
-The AI understands the request and uses QuickNode to retrieve blockchain data and generate a real trade.
+Before anything happens, Dilo displays an **Intent Receipt** explaining:
 
-Before anything happens, the user sees exactly what will occur.
+* What action will occur
+* How much will be spent
+* What the user will receive
+* Price or probability
+* Fees
+* Relevant conditions
 
-The user's wallet always signs the transaction.
+The user then explicitly approves and signs the transaction.
 
-The application never controls private keys.
+Dilo never controls the user's private keys.
 
-## Core Flow
+---
 
-### 1. Connect wallet
+## Hackathon MVP
 
-User connects Phantom or Backpack.
+The MVP demonstrates two natural-language actions.
 
-The application displays the wallet address and SOL balance.
+### 1. Token Swap
 
-### 2. Ask
+Example:
 
-User enters:
+> “Convert 10% of my SOL to USDC, but only if price impact is below 0.5%.”
 
-> “Swap $10 of SOL into USDC.”
+Dilo:
 
-### 3. Understand
+1. Reads the wallet balance
+2. Calculates the amount
+3. Gets a live Metis/Jupiter quote
+4. Checks the user's condition
+5. Displays an Intent Receipt
+6. Requests wallet approval
+7. Broadcasts and confirms the transaction
 
-The AI converts the request into a structured action:
+### 2. Prediction Market
 
-* Input token: SOL
-* Output token: USDC
-* Amount: approximately $10
-* Action: Swap
+Example:
 
-### 4. Quote
+> “Put $2 on YES that [event] happens.”
 
-QuickNode + Metis/Jupiter returns the best available swap quote.
+Dilo:
 
-The application shows:
+1. Identifies the prediction market
+2. Retrieves the current YES/NO pricing
+3. Calculates the position
+4. Displays the potential outcome
+5. Shows an Intent Receipt
+6. User signs the transaction
+7. Position is executed on Solana
 
-* Amount being spent
-* Estimated amount received
-* Price impact
-* Swap route
-* Network / priority fee
+Prediction-market execution uses DFlow/Kalshi infrastructure with Solana settlement. A verified/eligible wallet is required for live prediction-market trading.
 
-### 5. Confirm
+---
 
-The agent asks:
+## Core Experience
 
-> “You will swap approximately 0.07 SOL for 10 USDC. Price impact is 0.01%. Confirm?”
+### Connect
 
-The transaction cannot proceed without explicit confirmation.
+User connects Phantom.
 
-### 6. Sign
+### Ask
 
-The transaction is prepared and sent to the connected wallet.
+User enters a financial action naturally in English or Spanish.
 
-Phantom/Backpack asks the user to sign.
+### Understand
 
-The application never receives the user's private key.
+Dilo converts the request into structured intent.
 
-### 7. Execute
+### Quote
 
-The signed transaction is submitted through QuickNode's Solana RPC.
+QuickNode and the appropriate protocol retrieve live transaction data.
 
-### 8. Confirm
+### Review
 
-The application monitors the transaction until confirmation and returns:
+Dilo displays the **Intent Receipt**.
 
-> “Trade complete ✓”
+### Approve
 
-along with a Solscan link.
+User explicitly confirms the action.
 
-## MVP
+### Sign
 
-The hackathon version supports only four actions:
+Phantom opens and the user signs locally.
 
-1. Connect wallet
-2. Check wallet balance
-3. Get a token/swap quote
-4. Execute a token swap
+### Confirm
 
-Example commands:
+QuickNode broadcasts and confirms the Solana transaction.
 
-> “What's in my wallet?”
+Dilo returns a confirmation and explorer link.
 
-> “What's SOL trading at?”
-
-> “Swap 0.1 SOL for USDC.”
-
-> “Swap $5 of SOL for BONK.”
-
-No autonomous trading is required.
-
-## AI Agent
-
-The language model acts as an intent and reasoning layer.
-
-Available tools:
-
-* `getWalletBalance`
-* `getTokenPrice`
-* `getSwapQuote`
-* `prepareSwap`
-* `checkTransaction`
-
-The model never directly signs transactions.
-
-Blockchain actions are deterministic application functions exposed to the model as tools.
+---
 
 ## QuickNode Integration
-
-QuickNode provides the blockchain execution infrastructure.
 
 ### Solana RPC
 
 Used for:
 
-* wallet balances
-* blockchain reads
-* sending transactions
-* transaction confirmation
+* Wallet balances
+* Blockchain reads
+* Transaction submission
+* Transaction confirmation
+* Updated wallet state
 
 ### Metis / Jupiter
 
 Used for:
 
-* swap quotes
-* routing
-* price impact
-* swap transaction generation
+* Swap quotes
+* Routing
+* Expected output
+* Price impact
+* Swap transaction construction
+
+### Prediction Markets
+
+DFlow provides access to prediction-market positions that can be executed through Solana.
+
+QuickNode remains the Solana infrastructure layer for wallet state, transaction broadcast, and confirmation.
 
 ### Priority Fee API
 
-Optional enhancement used to estimate an appropriate transaction priority fee.
+Optional enhancement for transaction fee optimization.
 
-## Safety
+---
 
-The system is non-custodial.
+## AI & Safety
 
-* Private keys never leave the user's wallet.
-* Every trade requires explicit user confirmation.
-* Every transaction requires wallet signature.
-* Trade details are displayed before signing.
-* The demo can enforce a maximum transaction value.
+The AI is an **intent interpreter**, not an autonomous trader.
 
-The AI can propose actions but cannot move funds independently.
+It can:
 
-## Tech Stack
+* Understand English and Spanish
+* Interpret token amounts
+* Interpret wallet percentages
+* Understand conditions
+* Identify prediction-market intent
+* Explain the resulting action
 
-**Frontend**
+It cannot:
 
-* Next.js
-* TypeScript
-* Tailwind
-* Solana Wallet Adapter
+* Access private keys
+* Sign transactions
+* Approve actions
+* Override safety limits
+* Move funds independently
 
-**AI**
+Every action requires:
 
-* Claude or another tool-calling LLM
+**Intent → Validation → Receipt → Explicit Approval → Wallet Signature**
 
-**Blockchain**
+---
 
-* Solana
-* QuickNode RPC
-* QuickNode Metis / Jupiter
+## Live Demo
 
-**Hosting**
+### Demo 1
 
-* Vercel
+Connect Phantom and enter:
 
-## Demo
+> “Cambia el 10% de mi SOL a USDC, pero no lo hagas si el impacto supera 0.5%.”
 
-The ideal hackathon demo takes less than 60 seconds.
+Dilo retrieves the live quote, displays the Intent Receipt, and completes the signed Solana transaction.
 
-User connects Phantom.
+### Demo 2 / Wow Moment
 
-User types:
+Enter:
 
-> “Swap $5 of SOL into USDC.”
+> “Put $2 on YES that [live prediction] happens.”
 
-The agent retrieves a real quote.
+Dilo finds the market, displays the current probability, cost, and potential payout, then prepares the Solana transaction for wallet approval.
 
-It explains:
-
-> “You'll spend approximately 0.035 SOL and receive approximately $5 USDC with 0.01% price impact.”
-
-User presses **Confirm**.
-
-Phantom opens.
-
-User signs.
-
-The transaction executes.
-
-The agent responds:
-
-> “Done ✓ Your SOL was swapped for USDC.”
-
-A Solscan transaction link appears.
+---
 
 ## Vision
 
-Today the application supports swaps.
+The long-term vision is broader than trading.
 
-Long term, the same natural-language transaction layer could support:
+Dilo becomes a universal natural-language interface for Solana:
+
+> “Send Diana $20.”
 
 > “Stake 5 SOL.”
 
-> “Send Diana $20 in USDC.”
+> “Swap half my SOL into USDC.”
 
-> “Buy $25 of BONK.”
+> “Put $5 on YES for this prediction.”
 
-> “Swap half my BONK into SOL.”
+> “Buy $10 of SOL if it falls below $150.”
 
-> “Show me what changed in my wallet today.”
+Eventually the onboarding experience becomes:
 
-> “Create a limit order to buy SOL if it drops below $150.”
+**Sign in → wallet automatically created → add USD → tell Dilo what you want.**
 
-Instead of learning every Solana application individually, users describe what they want to accomplish and the agent translates that intent into transparent, user-approved blockchain transactions.
+Users should not have to learn every crypto interface.
 
-## Success
+They should simply describe the outcome they want, understand the resulting action, and approve it.
 
-A successful hackathon demo proves one thing:
+## Core Thesis
 
-**A user can go from a sentence to a completed on-chain Solana transaction in seconds, without giving an AI custody of their wallet.**
+**Solana solved transaction speed. Dilo solves the human interface.**
