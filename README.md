@@ -1,6 +1,6 @@
 # cursor-build-v1
 
-Vite + React + TypeScript app with Vercel auto-deploys from `main`.
+Team **Rucrsion** — Vite + React + TypeScript app with Vercel auto-deploys from `main`.
 
 ## Product
 

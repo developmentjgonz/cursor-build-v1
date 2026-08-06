@@ -2,10 +2,11 @@
 
 ## Overview
 
-**cursor-build-v1** is a Vite + React + TypeScript web app hosted on Vercel, used as the starting surface for iterative product builds in Cursor.
+**cursor-build-v1** is a Vite + React + TypeScript web app hosted on Vercel, used as the starting surface for iterative product builds in Cursor by team **Rucrsion**.
 
 | | |
 |---|---|
+| **Team** | Rucrsion |
 | **Status** | Scaffold live |
 | **Repo** | https://github.com/developmentjgonz/cursor-build-v1 |
 | **Production** | https://cursor-build-v1.vercel.app |
@@ -31,7 +32,7 @@ We need a public, auto-deploying app repo where product work can ship quickly fr
 
 | Persona | Need |
 |---|---|
-| Builder (you) | Fast iterate → push → see live |
+| Builder (Rucrsion) | Fast iterate → push → see live |
 | Cursor agent | Clear product constraints and file layout |
 | Visitor | Load a working page at the production URL |
 
@@ -49,7 +50,7 @@ We need a public, auto-deploying app repo where product work can ship quickly fr
 - [x] Vercel production deploy from `main`
 - [x] TypeScript React app that builds successfully
 - [ ] Product UI beyond the Vite template (define below)
-- [ ] This PRD linked from the README
+- [x] This PRD linked from the README
 
 ### Should have
 
@@ -75,7 +76,7 @@ We need a public, auto-deploying app repo where product work can ship quickly fr
 
 1. What is the first shippable feature after the scaffold?
 2. Do we need any env secrets or third-party APIs?
-3. Branding: name, tone, visual direction?
+3. Branding beyond team name Rucrsion: product name, tone, visual direction?
 
 ## Milestones
 
