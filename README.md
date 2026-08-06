@@ -1,10 +1,10 @@
 # cursor-build-v1
 
-Team **Rucrsion** — Vite + React + TypeScript app with Vercel auto-deploys from `main`.
+Team **Rucrsion** — **Solana Agent**: natural-language trading on Solana.
 
 ## Product
 
-- [PRD](./docs/PRD.md)
+- [PRD](./docs/PRD.md) — Natural Language Trading on Solana
 
 ## Links
 
