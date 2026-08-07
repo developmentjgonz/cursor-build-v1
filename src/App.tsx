@@ -40,7 +40,11 @@ export function App() {
   const [askSurface, setAskSurface] = useState<AskSurface>('home')
   const [fundingStep, setFundingStep] = useState<FundingVoiceStep | null>(null)
   const [connectRequestId, setConnectRequestId] = useState(0)
+  const [continueAfterConnectRequestId, setContinueAfterConnectRequestId] =
+    useState(0)
   const fundingBridgeRef = useRef<FundingVoiceBridge | null>(null)
+  const isWalletConnected =
+    wallet.status === 'connected' && wallet.address !== null
 
   const askDilo = useCallback(
     (prompt: string) => {
@@ -89,6 +93,7 @@ export function App() {
     setActiveTab('ask')
     setFundingStep(null)
     setConnectRequestId(0)
+    setContinueAfterConnectRequestId(0)
     setPhase('welcome')
     onboarding.restart()
   }, [onboarding, wallet])
@@ -113,11 +118,15 @@ export function App() {
       isEnabled: !onboarding.hasCompleted,
       phase,
       fundingStep: phase === 'funding' ? fundingStep : null,
+      isWalletConnected: phase === 'connect-wallet' && isWalletConnected,
       onCreateWallet: () => setPhase('create-wallet'),
       onUseExistingWallet: () => setPhase('connect-wallet'),
       onContinueHowItWorks: () => setPhase('funding'),
       onConnectPhantom: () => {
         setConnectRequestId((currentId) => currentId + 1)
+      },
+      onContinueAfterConnect: () => {
+        setContinueAfterConnectRequestId((currentId) => currentId + 1)
       },
       onSetDepositAmount: (amountUsd: number) =>
         fundingBridgeRef.current?.setAmountUsd(amountUsd) ??
@@ -135,7 +144,7 @@ export function App() {
         fundingBridgeRef.current?.finish() ??
         'Funding screen is not open yet.',
     }),
-    [fundingStep, onboarding.hasCompleted, phase],
+    [fundingStep, isWalletConnected, onboarding.hasCompleted, phase],
   )
 
   const onboardingVoice = useOnboardingVoice(onboardingVoiceOptions)
@@ -190,9 +199,10 @@ export function App() {
           <ConnectWalletScreen
             key="connect-wallet"
             wallet={wallet}
-            onConnected={handleExistingWalletConnected}
+            onContinue={handleExistingWalletConnected}
             onBack={() => setPhase('welcome')}
             connectRequestId={connectRequestId}
+            continueRequestId={continueAfterConnectRequestId}
             voiceStatus={onboardingVoice.status}
             voiceErrorMessage={onboardingVoice.errorMessage}
           />

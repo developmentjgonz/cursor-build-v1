@@ -1,4 +1,4 @@
-import { ArrowLeft, LoaderCircle, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, ChevronRight, LoaderCircle, ShieldCheck } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef } from 'react'
 
@@ -18,43 +18,32 @@ import { VoiceGuideStatus } from './components/voice-guide-status'
 
 interface ConnectWalletScreenProps {
   wallet: MockWallet
-  onConnected: () => void
+  onContinue: () => void
   onBack: () => void
   /** Increment to trigger connect from the voice walkthrough. */
   connectRequestId?: number
+  /** Increment to continue into the app from the voice walkthrough. */
+  continueRequestId?: number
   voiceStatus?: RealtimeVoiceStatus
   voiceErrorMessage?: string | null
 }
 
-const successHoldMs = 900
 const easeOut = [0.22, 1, 0.36, 1] as const
 
 export function ConnectWalletScreen({
   wallet,
-  onConnected,
+  onContinue,
   onBack,
   connectRequestId = 0,
+  continueRequestId = 0,
   voiceStatus = 'disconnected',
   voiceErrorMessage = null,
 }: ConnectWalletScreenProps) {
   const shouldReduceMotion = useReducedMotion()
-  const hasCompletedRef = useRef(false)
   const lastConnectRequestRef = useRef(0)
+  const lastContinueRequestRef = useRef(0)
   const isConnecting = wallet.status === 'connecting'
   const isConnected = wallet.status === 'connected' && wallet.address !== null
-
-  useEffect(() => {
-    if (!isConnected || hasCompletedRef.current) {
-      return
-    }
-
-    hasCompletedRef.current = true
-    const timeoutId = window.setTimeout(onConnected, successHoldMs)
-
-    return () => {
-      window.clearTimeout(timeoutId)
-    }
-  }, [isConnected, onConnected])
 
   useEffect(() => {
     if (
@@ -70,6 +59,21 @@ export function ConnectWalletScreen({
       wallet.connect()
     }
   }, [connectRequestId, wallet])
+
+  useEffect(() => {
+    if (
+      continueRequestId === 0 ||
+      continueRequestId === lastContinueRequestRef.current
+    ) {
+      return
+    }
+
+    lastContinueRequestRef.current = continueRequestId
+
+    if (isConnected) {
+      onContinue()
+    }
+  }, [continueRequestId, isConnected, onContinue])
 
   function handleConnect() {
     if (wallet.status !== 'disconnected') {
@@ -143,8 +147,8 @@ export function ConnectWalletScreen({
                   {shortAddress}
                 </p>
               </div>
-              <p role="status" className="text-[0.8125rem] text-faint">
-                Opening Dilo…
+              <p className="max-w-[20rem] text-[0.9375rem] leading-relaxed text-muted">
+                You’re in. Continue when you’re ready to open Dilo.
               </p>
             </motion.div>
           ) : isConnecting ? (
@@ -239,15 +243,30 @@ export function ConnectWalletScreen({
 
       <ScreenFooter>
         {isConnected ? (
-          <p className="flex max-w-[20rem] items-center gap-1.5 text-[0.8125rem] leading-snug text-faint">
-            <ShieldCheck
-              className="size-4 shrink-0 text-mint"
-              aria-hidden="true"
-            />
-            <span className="min-w-0 text-pretty">
-              You stay in control of every signature.
-            </span>
-          </p>
+          <>
+            <Button
+              variant="brand"
+              size="lg"
+              block
+              className="relative"
+              onClick={onContinue}
+            >
+              <span>Open Dilo</span>
+              <ChevronRight
+                aria-hidden="true"
+                className="absolute right-4 size-5 opacity-80"
+              />
+            </Button>
+            <p className="flex max-w-[20rem] items-center gap-1.5 text-[0.8125rem] leading-snug text-faint">
+              <ShieldCheck
+                className="size-4 shrink-0 text-mint"
+                aria-hidden="true"
+              />
+              <span className="min-w-0 text-pretty">
+                You stay in control of every signature.
+              </span>
+            </p>
+          </>
         ) : isConnecting ? (
           <Button variant="outline" size="lg" block onClick={handleBack}>
             Cancel

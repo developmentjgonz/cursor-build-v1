@@ -29,6 +29,7 @@ export interface OnboardingVoiceHandlers {
   onUseExistingWallet: () => void
   onContinueHowItWorks: () => void
   onConnectPhantom: () => void
+  onContinueAfterConnect: () => void
   onSetDepositAmount: (amountUsd: number) => string
   onSetDepositMethod: (methodId: DepositMethodId) => string
   onContinueFunding: () => string
@@ -39,6 +40,8 @@ export interface OnboardingVoiceHandlers {
 interface UseOnboardingVoiceOptions extends OnboardingVoiceHandlers {
   phase: OnboardingPhase
   fundingStep: FundingVoiceStep | null
+  /** True once Phantom has connected on the connect-wallet screen. */
+  isWalletConnected: boolean
   isEnabled: boolean
 }
 
@@ -101,7 +104,8 @@ While the wallet is being created, and on the how-it-works screen:
 - Sum up how it works in one breath, then ask if they're ready to add funds. Call continue_how_it_works when they say yes.
 
 Connect screen, for users with their own wallet:
-- Tell them you're opening the Phantom prompt, then call connect_phantom. Ask them to approve it there.
+- When they are ready, call connect_phantom and ask them to approve in Phantom.
+- After they are connected, wait for them to say they're ready, then call continue_after_connect. Do not rush them in.
 
 Adding funds:
 - Help them land on an amount with set_deposit_amount, and card or bank with set_deposit_method, then call continue_funding.
@@ -120,6 +124,7 @@ function supportsRealtimeVoice(): boolean {
 function describeScene(
   phase: OnboardingPhase,
   fundingStep: FundingVoiceStep | null,
+  isWalletConnected: boolean,
 ): string {
   if (phase === 'funding' && fundingStep) {
     if (fundingStep === 'card') {
@@ -129,7 +134,18 @@ function describeScene(
     return `The user is on the funding flow, step “${fundingStep}”. Guide the next action with the funding tools.`
   }
 
-  const scenes: Record<OnboardingPhase, string> = {
+  if (phase === 'connect-wallet') {
+    if (isWalletConnected) {
+      return 'Phantom is connected. Celebrate briefly, then call continue_after_connect when they say they are ready to open Dilo.'
+    }
+
+    return 'The user is on Connect Phantom. Call connect_phantom when they are ready to approve.'
+  }
+
+  const scenes: Record<
+    Exclude<OnboardingPhase, 'connect-wallet'>,
+    string
+  > = {
     welcome:
       'The user is on the welcome screen with Create wallet and I already have a wallet.',
     'create-wallet':
@@ -137,8 +153,6 @@ function describeScene(
     'how-it-works':
       'The user is on How it works. Summarize quickly and call continue_how_it_works when they want to add funds.',
     funding: 'The user is in the funding flow.',
-    'connect-wallet':
-      'The user is on Connect Phantom. Call connect_phantom when they are ready to approve.',
   }
 
   return scenes[phase]
@@ -261,8 +275,30 @@ async function startGlobalSession(): Promise<void> {
             return 'Not on the Phantom connect screen.'
           }
 
+          if (getOptions().isWalletConnected) {
+            return 'Already connected. Call continue_after_connect when they are ready.'
+          }
+
           window.setTimeout(getOptions().onConnectPhantom, 0)
           return 'Phantom connection requested. Ask them to approve in the wallet.'
+        },
+      }),
+      tool({
+        name: 'continue_after_connect',
+        description:
+          'Leave the connected Phantom screen and open Dilo after the user is ready.',
+        parameters: z.object({}),
+        async execute() {
+          if (getOptions().phase !== 'connect-wallet') {
+            return 'Not on the Phantom connect screen.'
+          }
+
+          if (!getOptions().isWalletConnected) {
+            return 'Wallet is not connected yet. Call connect_phantom first.'
+          }
+
+          window.setTimeout(getOptions().onContinueAfterConnect, 0)
+          return 'Opening Dilo now.'
         },
       }),
       tool({
@@ -390,7 +426,11 @@ async function startGlobalSession(): Promise<void> {
     }
 
     const options = getOptions()
-    const opening = describeScene(options.phase, options.fundingStep)
+    const opening = describeScene(
+      options.phase,
+      options.fundingStep,
+      options.isWalletConnected,
+    )
 
     publishGlobalVoice({
       session: guidedSession,
@@ -420,12 +460,16 @@ async function startGlobalSession(): Promise<void> {
   }
 }
 
-function notifyScene(phase: OnboardingPhase, fundingStep: FundingVoiceStep | null): void {
+function notifyScene(
+  phase: OnboardingPhase,
+  fundingStep: FundingVoiceStep | null,
+  isWalletConnected: boolean,
+): void {
   if (!globalVoice.session || globalVoice.status === 'connecting') {
     return
   }
 
-  const scene = describeScene(phase, fundingStep)
+  const scene = describeScene(phase, fundingStep, isWalletConnected)
 
   if (scene === globalVoice.lastScene) {
     return
@@ -467,8 +511,13 @@ export function useOnboardingVoice(
       return
     }
 
-    notifyScene(options.phase, options.fundingStep)
-  }, [options.fundingStep, options.isEnabled, options.phase])
+    notifyScene(options.phase, options.fundingStep, options.isWalletConnected)
+  }, [
+    options.fundingStep,
+    options.isEnabled,
+    options.isWalletConnected,
+    options.phase,
+  ])
 
   const start = useCallback(async () => {
     globalVoice.options = optionsRef.current
