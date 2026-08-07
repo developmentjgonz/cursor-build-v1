@@ -1,5 +1,6 @@
 import { predictionMarketsRequestSchema } from '../../shared/contracts/api'
-import { notImplemented, parseBody } from '../_lib/http'
+import { jsonResponse, parseBody } from '../_lib/http'
+import { searchPredictionMarkets } from '../_lib/prediction/markets'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(request, predictionMarketsRequestSchema)
@@ -8,5 +9,13 @@ export async function POST(request: Request): Promise<Response> {
     return parsedRequest.response
   }
 
-  return notImplemented('DFlow/Kalshi market search')
+  const result = await searchPredictionMarkets(parsedRequest.data.query)
+
+  return jsonResponse({
+    data: {
+      markets: result.markets,
+      isSimulated: result.isSimulated,
+      message: result.message,
+    },
+  })
 }

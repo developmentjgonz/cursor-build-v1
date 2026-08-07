@@ -25,6 +25,7 @@ export const predictionQuoteSchema = z.object({
   potentialPayoutUsd: z.number().positive(),
   estimatedFeeSol: z.number().nonnegative(),
   expiresAt: z.string().datetime(),
+  isSimulated: z.boolean(),
 })
 
 export const quoteSchema = z.discriminatedUnion('kind', [

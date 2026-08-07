@@ -7,6 +7,7 @@ export const predictionMarketSchema = z.object({
   noProbability: z.number().min(0).max(1),
   closesAt: z.string().datetime(),
   isTradingAvailable: z.boolean(),
+  isSimulated: z.boolean().optional(),
 })
 
 export const predictionMarketsSchema = z.array(predictionMarketSchema)
