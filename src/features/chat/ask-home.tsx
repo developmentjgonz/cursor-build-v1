@@ -13,6 +13,11 @@ import type { TrendingToken } from '../../../shared/contracts/token'
 import { DiloAvatar, type DiloMood } from '../../components/dilo/dilo-avatar'
 import { Button } from '../../components/ui/button'
 import { cn } from '../../lib/cn'
+import type {
+  MockTradeQuote,
+  MockTradeResult,
+  MockWalletSnapshot,
+} from '../wallet/use-mock-wallet'
 import type { DiloReply } from './chat-types'
 import {
   useRealtimeVoice,
@@ -28,6 +33,8 @@ interface AskHomeProps {
     tokens: readonly TrendingToken[],
     summary: string,
   ) => void
+  getWalletSnapshot: () => MockWalletSnapshot
+  applyConfirmedTrade: (quote: MockTradeQuote) => MockTradeResult
 }
 
 const easeOut = [0.22, 1, 0.36, 1] as const
@@ -66,6 +73,8 @@ export function AskHome({
   onOpenChat,
   onVoiceReply,
   onVoiceTokens,
+  getWalletSnapshot,
+  applyConfirmedTrade,
 }: AskHomeProps) {
   const shouldReduceMotion = useReducedMotion()
   const voice = useRealtimeVoice({
@@ -74,6 +83,8 @@ export function AskHome({
     onMarketsQuoted: onVoiceReply,
     onTokensQuoted: onVoiceTokens,
     onTradeCompleted: onVoiceReply,
+    getWalletSnapshot,
+    applyConfirmedTrade,
   })
 
   const isVoiceActive =

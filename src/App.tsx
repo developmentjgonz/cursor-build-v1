@@ -34,7 +34,10 @@ type AskSurface = 'home' | 'chat'
 export function App() {
   const onboarding = useOnboarding()
   const wallet = useMockWallet()
-  const chat = useDiloChat()
+  const chat = useDiloChat({
+    getWalletSnapshot: wallet.getSnapshot,
+    applyConfirmedTrade: wallet.applyConfirmedTrade,
+  })
   const [phase, setPhase] = useState<OnboardingPhase>('welcome')
   const [activeTab, setActiveTab] = useState<AppTab>('ask')
   const [askSurface, setAskSurface] = useState<AskSurface>('home')
@@ -217,13 +220,20 @@ export function App() {
 
       {activeTab === 'ask' ? (
         askSurface === 'chat' ? (
-          <ChatView chat={chat} onLeaveChat={() => setAskSurface('home')} />
+          <ChatView
+            chat={chat}
+            getWalletSnapshot={wallet.getSnapshot}
+            applyConfirmedTrade={wallet.applyConfirmedTrade}
+            onLeaveChat={() => setAskSurface('home')}
+          />
         ) : (
           <AskHome
             hasConversation={chat.messages.length > 0}
             onOpenChat={() => setAskSurface('chat')}
             onVoiceReply={handleVoiceReply}
             onVoiceTokens={handleVoiceTokens}
+            getWalletSnapshot={wallet.getSnapshot}
+            applyConfirmedTrade={wallet.applyConfirmedTrade}
           />
         )
       ) : null}

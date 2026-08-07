@@ -8,6 +8,11 @@ import {
   fetchTrendingTokens,
 } from '../../lib/tokens/token-service'
 import { createRealtimeSession } from '../../lib/voice/realtime-service'
+import type {
+  MockTradeQuote,
+  MockTradeResult,
+  MockWalletSnapshot,
+} from '../wallet/use-mock-wallet'
 import type { DiloReply } from './chat-types'
 import { diloPersona } from './dilo-persona'
 import {
@@ -41,6 +46,8 @@ export interface RealtimeVoice {
 
 interface FinancialVoiceOptions {
   mode?: 'financial'
+  getWalletSnapshot: () => MockWalletSnapshot
+  applyConfirmedTrade: (quote: MockTradeQuote) => MockTradeResult
   /** When true, Dilo speaks a short greeting as soon as the session connects. */
   greetOnStart?: boolean
   /** Optional: only used when a tool is called with showInChat true. */
@@ -127,6 +134,7 @@ The user is talking to you. Voice-first: explain options out loud. Do not push c
 - When they ask about prediction markets or a topic’s odds, call search_prediction_markets with showInChat false. Speak 1–2 market options conversationally: the question, YES vs NO, about what a couple bucks would pay back either way. Then ask which side they want.
 - When they pick a side and amount, call prepare_financial_intent with showInChat false. Explain stake, chance, and payout in plain talk. Ask if they want to confirm the trade.
 - When they say yes / confirm / do it / place it, call confirm_mock_trade. Celebrate briefly and say the trade request is confirmed without claiming funds moved.
+- For balance, holdings, portfolio, or “how much is left” questions, always call get_wallet_balance. Clearly call it a demo balance.
 - Prices / trending memecoins: call the price tools with showInChat false and speak the numbers. No lists.
 - Only set showInChat true if they say things like “show me,” “put it on screen,” or “open chat.”
 - Never invent prices, odds, or quotes. If a tool fails, say the feed is not available right now.`
@@ -248,6 +256,56 @@ export function useRealtimeVoice(
             }),
           ]
         : [
+            tool({
+              name: 'get_wallet_balance',
+              description:
+                'Read the current in-memory demo wallet balance and holdings. Use for balance, portfolio, holdings, and how-much-is-left questions.',
+              parameters: z.object({}),
+              async execute() {
+                const currentOptions = optionsRef.current
+
+                if (currentOptions.mode === 'onboarding') {
+                  return JSON.stringify({
+                    ok: false,
+                    error: 'The demo wallet is not available during onboarding.',
+                  })
+                }
+
+                const snapshot = currentOptions.getWalletSnapshot()
+
+                if (!snapshot.isConnected) {
+                  return JSON.stringify({
+                    ok: false,
+                    error: 'Connect the demo wallet first.',
+                    speak:
+                      'Your demo wallet is not connected yet. Connect it and I can read the balance.',
+                  })
+                }
+
+                const holdings = snapshot.holdings.map((holding) => ({
+                  symbol: holding.symbol,
+                  amount: holding.amount,
+                  valueUsd: holding.valueUsd,
+                }))
+                const holdingSummary =
+                  holdings.length === 0
+                    ? 'It is empty.'
+                    : holdings
+                        .map(
+                          (holding) =>
+                            `${holding.amount.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${holding.symbol}, worth about $${holding.valueUsd.toFixed(2)}`,
+                        )
+                        .join('; ')
+
+                return JSON.stringify({
+                  ok: true,
+                  isDemo: true,
+                  totalBalanceUsd: snapshot.totalBalanceUsd,
+                  holdings,
+                  speak: `Your demo balance is $${snapshot.totalBalanceUsd.toFixed(2)}. ${holdingSummary}`,
+                })
+              },
+            }),
             tool({
               name: 'get_token_prices',
               description:
@@ -412,8 +470,16 @@ export function useRealtimeVoice(
               async execute({ prompt, showInChat }) {
                 try {
                   const intent = await interpretIntent({ prompt })
-                  const reply = await prepareTradeReply(prompt, intent)
                   const currentOptions = optionsRef.current
+                  const walletSnapshot =
+                    currentOptions.mode === 'onboarding'
+                      ? undefined
+                      : currentOptions.getWalletSnapshot()
+                  const reply = await prepareTradeReply(
+                    prompt,
+                    intent,
+                    walletSnapshot,
+                  )
 
                   if (
                     reply.attachment?.kind === 'prediction' ||
@@ -467,18 +533,43 @@ export function useRealtimeVoice(
                   })
                 }
 
-                pendingTradeRef.current = null
-                const celebration = buildTradeCelebration(pending)
                 const currentOptions = optionsRef.current
+                if (currentOptions.mode === 'onboarding') {
+                  return JSON.stringify({
+                    ok: false,
+                    error: 'Trades are unavailable during onboarding.',
+                  })
+                }
 
-                if (showInChat && currentOptions.mode !== 'onboarding') {
-                  currentOptions.onTradeCompleted?.(prompt, celebration)
+                const tradeResult =
+                  currentOptions.applyConfirmedTrade(pending)
+                pendingTradeRef.current = null
+
+                if (!tradeResult.isApplied) {
+                  return JSON.stringify({
+                    ok: false,
+                    error: tradeResult.message,
+                    speak: tradeResult.message,
+                  })
+                }
+
+                const celebration = buildTradeCelebration(pending)
+                const completedReply: DiloReply = {
+                  ...celebration,
+                  text: `${celebration.text} Your demo balance is now $${tradeResult.snapshot.totalBalanceUsd.toFixed(2)}.`,
+                }
+
+                if (showInChat) {
+                  currentOptions.onTradeCompleted?.(prompt, completedReply)
                 }
 
                 return JSON.stringify({
                   ok: true,
-                  speak: celebration.text,
+                  isDemo: true,
+                  speak: completedReply.text,
                   kind: pending.kind,
+                  remainingBalanceUsd:
+                    tradeResult.snapshot.totalBalanceUsd,
                 })
               },
             }),

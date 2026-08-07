@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { TrendingToken } from '../../../shared/contracts/token'
+import type {
+  MockTradeQuote,
+  MockTradeResult,
+  MockWalletSnapshot,
+} from '../wallet/use-mock-wallet'
 import type { ChatMessage, DiloReply } from './chat-types'
 import { createDiloReply } from './mock-dilo-brain'
 import {
@@ -42,7 +47,15 @@ export interface DiloChat {
   confirmPendingTrade: () => void
 }
 
-export function useDiloChat(): DiloChat {
+interface UseDiloChatOptions {
+  getWalletSnapshot: () => MockWalletSnapshot
+  applyConfirmedTrade: (quote: MockTradeQuote) => MockTradeResult
+}
+
+export function useDiloChat({
+  getWalletSnapshot,
+  applyConfirmedTrade,
+}: UseDiloChatOptions): DiloChat {
   // The thread starts empty so the chat surface can greet with its own empty
   // state and starter prompts instead of a lone welcome bubble.
   const [messages, setMessages] = useState<readonly ChatMessage[]>([])
@@ -87,22 +100,40 @@ export function useDiloChat(): DiloChat {
       return
     }
 
+    const tradeResult = applyConfirmedTrade(pending)
     pendingTradeRef.current = null
+
+    if (!tradeResult.isApplied) {
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          id: createMessageId(),
+          author: 'dilo',
+          text: tradeResult.message,
+          createdAt: Date.now(),
+        },
+      ])
+      setFollowUps(['How much money do I have?', 'Try a smaller amount'])
+      setIsThinking(false)
+      return
+    }
+
     const celebration = buildTradeCelebration(pending)
+    const balanceText = ` Your demo balance is now $${tradeResult.snapshot.totalBalanceUsd.toFixed(2)}.`
 
     setMessages((currentMessages) => [
       ...currentMessages,
       {
         id: createMessageId(),
         author: 'dilo',
-        text: celebration.text,
+        text: `${celebration.text}${balanceText}`,
         attachment: celebration.attachment,
         createdAt: Date.now(),
       },
     ])
     setFollowUps(celebration.followUps)
     setIsThinking(false)
-  }, [])
+  }, [applyConfirmedTrade])
 
   const sendMessage = useCallback(
     (prompt: string) => {
@@ -146,7 +177,7 @@ export function useDiloChat(): DiloChat {
 
       window.clearTimeout(timeoutRef.current)
       timeoutRef.current = window.setTimeout(() => {
-        void createDiloReply(trimmedPrompt).then((reply) => {
+        void createDiloReply(trimmedPrompt, getWalletSnapshot()).then((reply) => {
           pendingTradeRef.current = extractTradeQuote(reply)
 
           setMessages((currentMessages) => [
@@ -164,7 +195,7 @@ export function useDiloChat(): DiloChat {
         })
       }, thinkingDelayMs)
     },
-    [confirmPendingTrade],
+    [confirmPendingTrade, getWalletSnapshot],
   )
 
   const receiveVoiceReply = useCallback(

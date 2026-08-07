@@ -11,6 +11,11 @@ import {
 import type { TrendingToken } from '../../../../shared/contracts/token'
 import { Button } from '../../../components/ui/button'
 import { cn } from '../../../lib/cn'
+import type {
+  MockTradeQuote,
+  MockTradeResult,
+  MockWalletSnapshot,
+} from '../../wallet/use-mock-wallet'
 import type { DiloReply } from '../chat-types'
 import {
   useRealtimeVoice,
@@ -26,6 +31,8 @@ interface ChatComposerProps {
     tokens: readonly TrendingToken[],
     summary: string,
   ) => void
+  getWalletSnapshot: () => MockWalletSnapshot
+  applyConfirmedTrade: (quote: MockTradeQuote) => MockTradeResult
 }
 
 const maxVisibleLines = 5
@@ -42,6 +49,8 @@ export function ChatComposer({
   onSend,
   onVoiceReply,
   onVoiceTokens,
+  getWalletSnapshot,
+  applyConfirmedTrade,
 }: ChatComposerProps) {
   const [prompt, setPrompt] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -52,6 +61,8 @@ export function ChatComposer({
     onMarketsQuoted: onVoiceReply,
     onTokensQuoted: onVoiceTokens,
     onTradeCompleted: onVoiceReply,
+    getWalletSnapshot,
+    applyConfirmedTrade,
   })
   const canSend = prompt.trim().length > 0 && !isThinking
   const isVoiceActive =

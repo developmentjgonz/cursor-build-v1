@@ -3,26 +3,35 @@ import type { PredictionMarket } from '../../../shared/contracts/prediction-mark
 import {
   createMockSwapQuote,
   mockHoldings,
+  mockTotalBalanceUsd,
 } from '../../lib/mock/mock-data'
 import {
   getPredictionQuote,
   searchPredictionMarkets,
 } from '../../lib/prediction/prediction-service'
 import { fetchTokenPrices } from '../../lib/tokens/token-service'
+import type { MockWalletSnapshot } from '../wallet/use-mock-wallet'
 import type { DiloReply } from './chat-types'
 import { explainPredictionQuote, explainSwapQuote } from './mock-trade'
 
 const quotedTitlePattern = /["“](.+?)["”]/
+const fallbackWalletSnapshot: MockWalletSnapshot = {
+  isConnected: true,
+  address: null,
+  totalBalanceUsd: mockTotalBalanceUsd,
+  holdings: mockHoldings,
+}
 
 export async function prepareTradeReply(
   prompt: string,
   intent: Intent,
+  walletSnapshot = fallbackWalletSnapshot,
 ): Promise<DiloReply> {
   if (intent.kind === 'prediction') {
     return preparePredictionTrade(prompt, intent)
   }
 
-  return prepareSwapTrade(intent)
+  return prepareSwapTrade(intent, walletSnapshot)
 }
 
 export async function prepareMarketsReply(query = ''): Promise<DiloReply> {
@@ -104,8 +113,11 @@ async function preparePredictionTrade(
 
 async function prepareSwapTrade(
   intent: Extract<Intent, { kind: 'swap' }>,
+  walletSnapshot: MockWalletSnapshot,
 ): Promise<DiloReply> {
-  const solHolding = mockHoldings.find((holding) => holding.symbol === 'SOL')
+  const solHolding = walletSnapshot.holdings.find(
+    (holding) => holding.symbol === 'SOL',
+  )
   let solPriceUsd = 154
 
   try {

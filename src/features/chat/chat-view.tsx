@@ -3,6 +3,11 @@ import { AnimatePresence, useReducedMotion } from 'motion/react'
 import { useEffect, useRef } from 'react'
 
 import { Button } from '../../components/ui/button'
+import type {
+  MockTradeQuote,
+  MockTradeResult,
+  MockWalletSnapshot,
+} from '../wallet/use-mock-wallet'
 import { ChatComposer } from './components/chat-composer'
 import { ChatEmptyState } from './components/chat-empty-state'
 import { ChatMessageRow } from './components/chat-message'
@@ -12,10 +17,17 @@ import type { DiloChat } from './use-dilo-chat'
 
 interface ChatViewProps {
   chat: DiloChat
+  getWalletSnapshot: () => MockWalletSnapshot
+  applyConfirmedTrade: (quote: MockTradeQuote) => MockTradeResult
   onLeaveChat?: () => void
 }
 
-export function ChatView({ chat, onLeaveChat }: ChatViewProps) {
+export function ChatView({
+  chat,
+  getWalletSnapshot,
+  applyConfirmedTrade,
+  onLeaveChat,
+}: ChatViewProps) {
   const {
     messages,
     followUps,
@@ -117,6 +129,8 @@ export function ChatView({ chat, onLeaveChat }: ChatViewProps) {
         onSend={sendMessage}
         onVoiceReply={receiveVoiceReply}
         onVoiceTokens={receiveVoiceTokens}
+        getWalletSnapshot={getWalletSnapshot}
+        applyConfirmedTrade={applyConfirmedTrade}
       />
     </div>
   )

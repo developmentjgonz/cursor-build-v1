@@ -4,6 +4,7 @@ import {
   mockHoldings,
   mockTotalBalanceUsd,
 } from '../../lib/mock/mock-data'
+import type { MockWalletSnapshot } from '../wallet/use-mock-wallet'
 import {
   getPredictionQuote,
   searchPredictionMarkets,
@@ -46,7 +47,17 @@ const defaultFollowUps = [
   'Show me open markets',
 ] as const
 
-export async function createDiloReply(prompt: string): Promise<DiloReply> {
+const fallbackWalletSnapshot: MockWalletSnapshot = {
+  isConnected: true,
+  address: null,
+  totalBalanceUsd: mockTotalBalanceUsd,
+  holdings: mockHoldings,
+}
+
+export async function createDiloReply(
+  prompt: string,
+  walletSnapshot = fallbackWalletSnapshot,
+): Promise<DiloReply> {
   if (greetingPattern.test(prompt.trim())) {
     return {
       text: '¡Hola! I can check your wallet, scan what is moving, or set up a swap. What sounds good?',
@@ -73,7 +84,9 @@ export async function createDiloReply(prompt: string): Promise<DiloReply> {
   if (swapPattern.test(prompt)) {
     const amountMatch = amountPattern.exec(prompt)
     const percentageMatch = percentagePattern.exec(prompt)
-    const solHolding = mockHoldings.find((holding) => holding.symbol === 'SOL')
+    const solHolding = walletSnapshot.holdings.find(
+      (holding) => holding.symbol === 'SOL',
+    )
     let solPriceUsd = 154
 
     try {
@@ -111,12 +124,20 @@ export async function createDiloReply(prompt: string): Promise<DiloReply> {
   }
 
   if (balancePattern.test(prompt)) {
+    if (!walletSnapshot.isConnected) {
+      return {
+        text: 'Connect your demo wallet first and I can read its balance.',
+        attachment: { kind: 'connect' },
+        followUps: ['Connect my wallet', 'What are the hottest memecoins?'],
+      }
+    }
+
     return {
-      text: 'Here is where your wallet stands right now.',
+      text: `Your demo wallet balance is $${walletSnapshot.totalBalanceUsd.toFixed(2)} right now.`,
       attachment: {
         kind: 'balance',
-        totalUsd: mockTotalBalanceUsd,
-        holdings: mockHoldings,
+        totalUsd: walletSnapshot.totalBalanceUsd,
+        holdings: walletSnapshot.holdings,
       },
       followUps: ['Swap $5 of SOL into USDC', 'What are the hottest memecoins?'],
     }
