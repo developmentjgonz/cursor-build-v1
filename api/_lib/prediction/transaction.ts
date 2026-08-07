@@ -1,10 +1,10 @@
-import type { PredictionQuote } from '../../../shared/contracts/quote'
-import type { SerializedTransaction } from '../../../shared/contracts/api'
-import { getDflowOrder, searchDflowEvents } from '../dflow/client'
-import { extractOutcomeMint, findDflowMarket } from '../dflow/mapper'
-import { getServerEnv } from '../env'
-import { SIMULATED_TRANSACTION } from './fixtures'
-import { resolvePredictionMode } from './mode'
+import type { PredictionQuote } from '../../../shared/contracts/quote.js'
+import type { SerializedTransaction } from '../../../shared/contracts/api.js'
+import { getDflowOrder, searchDflowEvents } from '../dflow/client.js'
+import { extractOutcomeMint, findDflowMarket } from '../dflow/mapper.js'
+import { getServerEnv } from '../env.js'
+import { SIMULATED_TRANSACTION } from './fixtures.js'
+import { resolvePredictionMode } from './mode.js'
 
 const USDC_DECIMALS = 6
 

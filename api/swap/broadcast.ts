@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-import { apiError, jsonResponse, parseBody } from '../_lib/http'
-import { isSwapServiceError } from '../_lib/swap/errors'
-import { sendSignedTransaction } from '../_lib/swap/solana'
+import { apiError, jsonResponse, parseBody } from '../_lib/http.js'
+import { isSwapServiceError } from '../_lib/swap/errors.js'
+import { sendSignedTransaction } from '../_lib/swap/solana.js'
 
 const broadcastRequestSchema = z.object({
   signedTransaction: z.string().min(1),

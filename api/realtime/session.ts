@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto'
 
 import { z } from 'zod'
 
-import { realtimeSessionRequestSchema } from '../../shared/contracts/api'
-import { apiError, jsonResponse, parseBody } from '../_lib/http'
+import { realtimeSessionRequestSchema } from '../../shared/contracts/api.js'
+import { apiError, jsonResponse, parseBody } from '../_lib/http.js'
 
 const openAiSessionSchema = z.union([
   z.object({ value: z.string().min(1) }),

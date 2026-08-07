@@ -1,9 +1,9 @@
-import { getServerEnv } from '../env'
+import { getServerEnv } from '../env.js'
 import type {
   DflowEventsResponse,
   DflowOrderResponse,
   DflowProofResponse,
-} from './types'
+} from './types.js'
 
 function buildHeaders(apiKey?: string): Record<string, string> {
   const headers: Record<string, string> = {

@@ -1,15 +1,15 @@
-import type { PredictionIntent } from '../../../shared/contracts/intent'
-import type { PredictionQuote } from '../../../shared/contracts/quote'
-import { getDflowOrder, searchDflowEvents } from '../dflow/client'
+import type { PredictionIntent } from '../../../shared/contracts/intent.js'
+import type { PredictionQuote } from '../../../shared/contracts/quote.js'
+import { getDflowOrder, searchDflowEvents } from '../dflow/client.js'
 import {
   extractOutcomeMint,
   findDflowMarket,
   mapDflowMarketToContract,
-} from '../dflow/mapper'
-import { getServerEnv } from '../env'
-import { buildSimulatedQuote, getSimulatedMarket } from './fixtures'
-import { getLiveMarketById } from './markets'
-import { resolvePredictionMode } from './mode'
+} from '../dflow/mapper.js'
+import { getServerEnv } from '../env.js'
+import { buildSimulatedQuote, getSimulatedMarket } from './fixtures.js'
+import { getLiveMarketById } from './markets.js'
+import { resolvePredictionMode } from './mode.js'
 
 const USDC_DECIMALS = 6
 const OUTCOME_TOKEN_DECIMALS = 6

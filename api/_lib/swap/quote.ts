@@ -1,11 +1,11 @@
-import type { SwapIntent } from '../../../shared/contracts/intent'
-import type { SwapQuote } from '../../../shared/contracts/quote'
-import { getServerEnv } from '../env'
-import { fromRawAmount, percentOfBalance, toRawAmount } from './amounts'
-import { SwapServiceError } from './errors'
-import { fetchJupiterQuote, type JupiterQuote } from './jupiter'
-import { assertValidWallet, getTokenBalanceRaw } from './solana'
-import { resolveToken } from './tokens'
+import type { SwapIntent } from '../../../shared/contracts/intent.js'
+import type { SwapQuote } from '../../../shared/contracts/quote.js'
+import { getServerEnv } from '../env.js'
+import { fromRawAmount, percentOfBalance, toRawAmount } from './amounts.js'
+import { SwapServiceError } from './errors.js'
+import { fetchJupiterQuote, type JupiterQuote } from './jupiter.js'
+import { assertValidWallet, getTokenBalanceRaw } from './solana.js'
+import { resolveToken } from './tokens.js'
 
 const QUOTE_TTL_MS = 45_000
 const DEFAULT_FEE_SOL = 0.000005

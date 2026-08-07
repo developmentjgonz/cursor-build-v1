@@ -1,4 +1,4 @@
-import type { TrendingToken } from '../../../shared/contracts/token'
+import type { TrendingToken } from '../../../shared/contracts/token.js'
 
 export const mockTrendingTokens: readonly TrendingToken[] = [
   {

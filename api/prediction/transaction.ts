@@ -1,6 +1,6 @@
-import { buildPredictionTransactionRequestSchema } from '../../shared/contracts/api'
-import { jsonResponse, apiError, parseBody } from '../_lib/http'
-import { buildPredictionTransaction } from '../_lib/prediction/transaction'
+import { buildPredictionTransactionRequestSchema } from '../../shared/contracts/api.js'
+import { jsonResponse, apiError, parseBody } from '../_lib/http.js'
+import { buildPredictionTransaction } from '../_lib/prediction/transaction.js'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(

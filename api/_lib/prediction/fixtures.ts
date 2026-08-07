@@ -1,6 +1,6 @@
-import type { PredictionMarket } from '../../../shared/contracts/prediction-market'
-import type { PredictionIntent } from '../../../shared/contracts/intent'
-import type { PredictionQuote } from '../../../shared/contracts/quote'
+import type { PredictionMarket } from '../../../shared/contracts/prediction-market.js'
+import type { PredictionIntent } from '../../../shared/contracts/intent.js'
+import type { PredictionQuote } from '../../../shared/contracts/quote.js'
 
 const SIMULATED_MARKETS: PredictionMarket[] = [
   {

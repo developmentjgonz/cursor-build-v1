@@ -1,9 +1,9 @@
-import { getServerEnv } from '../env'
+import { getServerEnv } from '../env.js'
 import type {
   KalshiEventsResponse,
   KalshiMarket,
   KalshiMarketsResponse,
-} from './types'
+} from './types.js'
 
 async function readJson<T>(response: Response): Promise<T> {
   if (!response.ok) {

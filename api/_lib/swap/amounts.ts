@@ -1,4 +1,4 @@
-import { SwapServiceError } from './errors'
+import { SwapServiceError } from './errors.js'
 
 export function toRawAmount(humanAmount: number, decimals: number): bigint {
   if (!Number.isFinite(humanAmount) || humanAmount <= 0) {

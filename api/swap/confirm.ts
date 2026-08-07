@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-import { apiError, jsonResponse, parseBody } from '../_lib/http'
-import { isSwapServiceError } from '../_lib/swap/errors'
-import { confirmSignature } from '../_lib/swap/solana'
+import { apiError, jsonResponse, parseBody } from '../_lib/http.js'
+import { isSwapServiceError } from '../_lib/swap/errors.js'
+import { confirmSignature } from '../_lib/swap/solana.js'
 
 const confirmRequestSchema = z.object({
   signature: z.string().min(1),

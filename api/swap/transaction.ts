@@ -1,7 +1,7 @@
-import { buildSwapTransactionRequestSchema } from '../../shared/contracts/api'
-import { apiError, jsonResponse, parseBody } from '../_lib/http'
-import { isSwapServiceError } from '../_lib/swap/errors'
-import { buildLiveSwapTransaction } from '../_lib/swap/transaction'
+import { buildSwapTransactionRequestSchema } from '../../shared/contracts/api.js'
+import { apiError, jsonResponse, parseBody } from '../_lib/http.js'
+import { isSwapServiceError } from '../_lib/swap/errors.js'
+import { buildLiveSwapTransaction } from '../_lib/swap/transaction.js'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(

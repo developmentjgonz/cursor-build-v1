@@ -1,7 +1,7 @@
-import type { TrendingToken } from '../../../shared/contracts/token'
-import { MEMECOIN_SYMBOLS, TRACKED_TOKENS } from '../jupiter/catalog'
-import { fetchJupiterPrices } from '../jupiter/client'
-import { mockTrendingTokens } from './fixtures'
+import type { TrendingToken } from '../../../shared/contracts/token.js'
+import { MEMECOIN_SYMBOLS, TRACKED_TOKENS } from '../jupiter/catalog.js'
+import { fetchJupiterPrices } from '../jupiter/client.js'
+import { mockTrendingTokens } from './fixtures.js'
 
 export interface TrendingTokensResult {
   tokens: TrendingToken[]

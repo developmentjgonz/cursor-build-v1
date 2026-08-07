@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import { intentSchema } from './intent'
-import { quoteSchema } from './quote'
+import { intentSchema } from './intent.js'
+import { quoteSchema } from './quote.js'
 
 export const intentReceiptSchema = z.object({
   id: z.string().min(1),

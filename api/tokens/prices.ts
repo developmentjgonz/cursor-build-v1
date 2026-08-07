@@ -1,9 +1,9 @@
 import {
   tokenPricesRequestSchema,
   tokenPricesResponseSchema,
-} from '../../shared/contracts/api'
-import { apiError, jsonResponse, parseBody } from '../_lib/http'
-import { getTokenPricesBySymbol } from '../_lib/tokens/trending'
+} from '../../shared/contracts/api.js'
+import { apiError, jsonResponse, parseBody } from '../_lib/http.js'
+import { getTokenPricesBySymbol } from '../_lib/tokens/trending.js'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(request, tokenPricesRequestSchema)

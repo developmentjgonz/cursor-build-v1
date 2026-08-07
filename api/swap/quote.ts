@@ -1,7 +1,7 @@
-import { swapQuoteRequestSchema } from '../../shared/contracts/api'
-import { apiError, jsonResponse, parseBody } from '../_lib/http'
-import { isSwapServiceError } from '../_lib/swap/errors'
-import { getLiveSwapQuote } from '../_lib/swap/quote'
+import { swapQuoteRequestSchema } from '../../shared/contracts/api.js'
+import { apiError, jsonResponse, parseBody } from '../_lib/http.js'
+import { isSwapServiceError } from '../_lib/swap/errors.js'
+import { getLiveSwapQuote } from '../_lib/swap/quote.js'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(request, swapQuoteRequestSchema)

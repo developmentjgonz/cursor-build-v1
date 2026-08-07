@@ -1,6 +1,6 @@
 import type { ZodType } from 'zod'
 
-import type { ApiFailure, ApiResponse } from '../../shared/contracts/api'
+import type { ApiFailure, ApiResponse } from '../../shared/contracts/api.js'
 
 interface ParsedBody<T> {
   data: T

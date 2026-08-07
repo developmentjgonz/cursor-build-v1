@@ -1,6 +1,6 @@
-import type { WalletEligibility } from '../../../shared/contracts/api'
-import { verifyWalletWithProof } from '../dflow/client'
-import { resolvePredictionMode } from './mode'
+import type { WalletEligibility } from '../../../shared/contracts/api.js'
+import { verifyWalletWithProof } from '../dflow/client.js'
+import { resolvePredictionMode } from './mode.js'
 
 export async function checkWalletEligibility(
   walletAddress: string,

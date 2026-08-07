@@ -1,5 +1,5 @@
-import type { PredictionMarket } from '../../../shared/contracts/prediction-market'
-import type { DflowEvent, DflowMarket, DflowMarketAccount } from './types'
+import type { PredictionMarket } from '../../../shared/contracts/prediction-market.js'
+import type { DflowEvent, DflowMarket, DflowMarketAccount } from './types.js'
 
 function parseProbability(value: string | null | undefined): number | null {
   if (!value) {

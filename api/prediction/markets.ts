@@ -1,6 +1,6 @@
-import { predictionMarketsRequestSchema } from '../../shared/contracts/api'
-import { jsonResponse, parseBody } from '../_lib/http'
-import { searchPredictionMarkets } from '../_lib/prediction/markets'
+import { predictionMarketsRequestSchema } from '../../shared/contracts/api.js'
+import { jsonResponse, parseBody } from '../_lib/http.js'
+import { searchPredictionMarkets } from '../_lib/prediction/markets.js'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(request, predictionMarketsRequestSchema)

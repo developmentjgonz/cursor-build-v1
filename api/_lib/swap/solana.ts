@@ -6,10 +6,10 @@ import {
 } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
-import { getServerEnv } from '../env'
-import { fromRawAmount } from './amounts'
-import { SwapServiceError } from './errors'
-import { NATIVE_SOL_MINT, resolveToken } from './tokens'
+import { getServerEnv } from '../env.js'
+import { fromRawAmount } from './amounts.js'
+import { SwapServiceError } from './errors.js'
+import { NATIVE_SOL_MINT, resolveToken } from './tokens.js'
 
 let connection: Connection | null = null
 

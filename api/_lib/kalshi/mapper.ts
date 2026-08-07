@@ -1,5 +1,5 @@
-import type { PredictionMarket } from '../../../shared/contracts/prediction-market'
-import type { KalshiEvent, KalshiMarket } from './types'
+import type { PredictionMarket } from '../../../shared/contracts/prediction-market.js'
+import type { KalshiEvent, KalshiMarket } from './types.js'
 
 const SERIES_HINTS: readonly { pattern: RegExp; seriesTicker: string }[] = [
   { pattern: /\b(btc|bitcoin)\b/i, seriesTicker: 'KXBTC' },

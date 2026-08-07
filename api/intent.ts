@@ -2,9 +2,9 @@ import OpenAI from 'openai'
 import { zodTextFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 
-import { interpretIntentRequestSchema } from '../shared/contracts/api'
-import { intentSchema, type Intent } from '../shared/contracts/intent'
-import { apiError, jsonResponse, parseBody } from './_lib/http'
+import { interpretIntentRequestSchema } from '../shared/contracts/api.js'
+import { intentSchema, type Intent } from '../shared/contracts/intent.js'
+import { apiError, jsonResponse, parseBody } from './_lib/http.js'
 
 const parsedSwapIntentSchema = z.object({
   kind: z.literal('swap'),

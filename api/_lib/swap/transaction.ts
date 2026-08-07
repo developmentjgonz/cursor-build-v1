@@ -1,14 +1,14 @@
 import { Connection } from '@solana/web3.js'
 
-import type { SerializedTransaction } from '../../../shared/contracts/api'
-import type { SwapQuote } from '../../../shared/contracts/quote'
-import { getServerEnv } from '../env'
-import { fromRawAmount } from './amounts'
-import { SwapServiceError } from './errors'
-import { fetchJupiterSwapTransaction } from './jupiter'
-import { refreshJupiterQuoteFromSwapQuote } from './quote'
-import { assertValidWallet } from './solana'
-import { resolveToken } from './tokens'
+import type { SerializedTransaction } from '../../../shared/contracts/api.js'
+import type { SwapQuote } from '../../../shared/contracts/quote.js'
+import { getServerEnv } from '../env.js'
+import { fromRawAmount } from './amounts.js'
+import { SwapServiceError } from './errors.js'
+import { fetchJupiterSwapTransaction } from './jupiter.js'
+import { refreshJupiterQuoteFromSwapQuote } from './quote.js'
+import { assertValidWallet } from './solana.js'
+import { resolveToken } from './tokens.js'
 
 async function resolveLastValidBlockHeight(
   provided: number | undefined,

@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
-import { predictionIntentSchema, swapIntentSchema } from './intent'
-import { predictionMarketsSchema } from './prediction-market'
-import { predictionQuoteSchema, swapQuoteSchema } from './quote'
-import { trendingTokensSchema } from './token'
+import { predictionIntentSchema, swapIntentSchema } from './intent.js'
+import { predictionMarketsSchema } from './prediction-market.js'
+import { predictionQuoteSchema, swapQuoteSchema } from './quote.js'
+import { trendingTokensSchema } from './token.js'
 
 const walletAddressSchema = z.string().trim().min(32).max(44)
 

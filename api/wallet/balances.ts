@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-import { apiError, jsonResponse, parseBody } from '../_lib/http'
-import { isSwapServiceError } from '../_lib/swap/errors'
-import { getWalletBalances } from '../_lib/swap/solana'
+import { apiError, jsonResponse, parseBody } from '../_lib/http.js'
+import { isSwapServiceError } from '../_lib/swap/errors.js'
+import { getWalletBalances } from '../_lib/swap/solana.js'
 
 const balancesRequestSchema = z.object({
   walletAddress: z.string().trim().min(32).max(44),

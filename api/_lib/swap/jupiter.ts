@@ -1,5 +1,5 @@
-import { getServerEnv } from '../env'
-import { SwapServiceError } from './errors'
+import { getServerEnv } from '../env.js'
+import { SwapServiceError } from './errors.js'
 
 export interface JupiterQuote {
   inputMint: string

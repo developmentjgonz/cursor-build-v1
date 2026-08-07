@@ -1,20 +1,20 @@
-import type { PredictionMarket } from '../../../shared/contracts/prediction-market'
-import { listDflowEvents, searchDflowEvents } from '../dflow/client'
-import { flattenDflowEvents } from '../dflow/mapper'
-import { getServerEnv } from '../env'
+import type { PredictionMarket } from '../../../shared/contracts/prediction-market.js'
+import { listDflowEvents, searchDflowEvents } from '../dflow/client.js'
+import { flattenDflowEvents } from '../dflow/mapper.js'
+import { getServerEnv } from '../env.js'
 import {
   getKalshiMarket,
   listKalshiEvents,
   listKalshiMarkets,
-} from '../kalshi/client'
+} from '../kalshi/client.js'
 import {
   filterMarketsByQuery,
   flattenKalshiEvents,
   mapKalshiMarketToContract,
   resolveSeriesTickerHint,
-} from '../kalshi/mapper'
-import { searchSimulatedMarkets } from './fixtures'
-import { resolvePredictionMode } from './mode'
+} from '../kalshi/mapper.js'
+import { searchSimulatedMarkets } from './fixtures.js'
+import { resolvePredictionMode } from './mode.js'
 
 export interface PredictionMarketsResult {
   markets: PredictionMarket[]

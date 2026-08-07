@@ -1,6 +1,6 @@
-import { predictionQuoteRequestSchema } from '../../shared/contracts/api'
-import { jsonResponse, apiError, parseBody } from '../_lib/http'
-import { getPredictionQuote } from '../_lib/prediction/quote'
+import { predictionQuoteRequestSchema } from '../../shared/contracts/api.js'
+import { jsonResponse, apiError, parseBody } from '../_lib/http.js'
+import { getPredictionQuote } from '../_lib/prediction/quote.js'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(request, predictionQuoteRequestSchema)

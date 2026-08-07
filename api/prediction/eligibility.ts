@@ -1,6 +1,6 @@
-import { walletEligibilityRequestSchema } from '../../shared/contracts/api'
-import { jsonResponse, parseBody } from '../_lib/http'
-import { checkWalletEligibility } from '../_lib/prediction/eligibility'
+import { walletEligibilityRequestSchema } from '../../shared/contracts/api.js'
+import { jsonResponse, parseBody } from '../_lib/http.js'
+import { checkWalletEligibility } from '../_lib/prediction/eligibility.js'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(

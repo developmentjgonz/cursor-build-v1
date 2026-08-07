@@ -1,4 +1,4 @@
-import { getServerEnv } from '../env'
+import { getServerEnv } from '../env.js'
 
 export interface JupiterPriceQuote {
   usdPrice: number

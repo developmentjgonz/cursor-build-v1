@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { predictionOutcomeSchema } from './intent'
+import { predictionOutcomeSchema } from './intent.js'
 
 export const swapQuoteSchema = z.object({
   kind: z.literal('swap'),
