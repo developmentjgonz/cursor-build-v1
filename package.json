@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "vercel-build": "npm run build",
     "preview": "vite preview",
     "test:api": "tsx scripts/test-local-api.ts",
     "dev:vercel": "vercel dev"
