@@ -1,122 +1,98 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { AnimatePresence } from 'motion/react'
+import { useCallback, useState } from 'react'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { AppHeader } from './components/app-shell/app-header'
+import {
+  BottomNavigation,
+  type AppTab,
+} from './components/app-shell/bottom-navigation'
+import { Screen } from './components/ui/screen'
+import { ChatView } from './features/chat/chat-view'
+import { useDiloChat } from './features/chat/use-dilo-chat'
+import { FundingFlow } from './features/funding/funding-flow'
+import { MarketsView } from './features/markets/markets-view'
+import { HowItWorksScreen } from './features/onboarding/how-it-works-screen'
+import { useOnboarding } from './features/onboarding/use-onboarding'
+import { WelcomeScreen } from './features/onboarding/welcome-screen'
+import { useMockWallet } from './features/wallet/use-mock-wallet'
+import { WalletView } from './features/wallet/wallet-view'
+
+type OnboardingPhase = 'welcome' | 'how-it-works' | 'funding'
+
+export function App() {
+  const onboarding = useOnboarding()
+  const wallet = useMockWallet()
+  const chat = useDiloChat()
+  const [phase, setPhase] = useState<OnboardingPhase>('welcome')
+  const [activeTab, setActiveTab] = useState<AppTab>('ask')
+
+  const askDilo = useCallback(
+    (prompt: string) => {
+      setActiveTab('ask')
+      chat.sendMessage(prompt)
+    },
+    [chat],
+  )
+
+  const handleDeposit = useCallback(
+    (depositedUsd: number) => {
+      wallet.depositUsd(depositedUsd)
+      onboarding.complete()
+    },
+    [onboarding, wallet],
+  )
+
+  const handleExistingWallet = useCallback(() => {
+    wallet.connect()
+    onboarding.complete()
+  }, [onboarding, wallet])
+
+  const handleRestartOnboarding = useCallback(() => {
+    setPhase('welcome')
+    onboarding.restart()
+  }, [onboarding])
+
+  if (!onboarding.hasCompleted) {
+    return (
+      <AnimatePresence mode="wait">
+        {phase === 'welcome' ? (
+          <WelcomeScreen
+            key="welcome"
+            onCreateWallet={() => setPhase('how-it-works')}
+            onUseExistingWallet={handleExistingWallet}
+          />
+        ) : null}
+
+        {phase === 'how-it-works' ? (
+          <HowItWorksScreen
+            key="how-it-works"
+            onContinue={() => setPhase('funding')}
+            onBack={() => setPhase('welcome')}
+          />
+        ) : null}
+
+        {phase === 'funding' ? (
+          <FundingFlow
+            key="funding"
+            onComplete={handleDeposit}
+            onBack={() => setPhase('how-it-works')}
+          />
+        ) : null}
+      </AnimatePresence>
+    )
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Screen>
+      <AppHeader wallet={wallet} />
 
-      <div className="ticks"></div>
+      {activeTab === 'ask' ? <ChatView chat={chat} /> : null}
+      {activeTab === 'markets' ? <MarketsView onAskDilo={askDilo} /> : null}
+      {activeTab === 'wallet' ? (
+        <WalletView wallet={wallet} onRestartOnboarding={handleRestartOnboarding} />
+      ) : null}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+    </Screen>
   )
 }
-
-export default App
