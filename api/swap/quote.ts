@@ -1,5 +1,7 @@
 import { swapQuoteRequestSchema } from '../../shared/contracts/api'
-import { notImplemented, parseBody } from '../_lib/http'
+import { apiError, jsonResponse, parseBody } from '../_lib/http'
+import { isSwapServiceError } from '../_lib/swap/errors'
+import { getLiveSwapQuote } from '../_lib/swap/quote'
 
 export async function POST(request: Request): Promise<Response> {
   const parsedRequest = await parseBody(request, swapQuoteRequestSchema)
@@ -8,5 +10,18 @@ export async function POST(request: Request): Promise<Response> {
     return parsedRequest.response
   }
 
-  return notImplemented('Jupiter/Metis quote')
+  try {
+    const { quote } = await getLiveSwapQuote(parsedRequest.data)
+    return jsonResponse({ data: quote })
+  } catch (error) {
+    if (isSwapServiceError(error)) {
+      return apiError(error.status, error.code, error.message, error.details)
+    }
+
+    return apiError(
+      502,
+      'SWAP_QUOTE_FAILED',
+      error instanceof Error ? error.message : 'Unable to build swap quote',
+    )
+  }
 }
