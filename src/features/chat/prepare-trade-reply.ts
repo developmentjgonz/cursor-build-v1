@@ -98,7 +98,7 @@ async function preparePredictionTrade(
       kind: 'prediction',
       quote,
     },
-    followUps: ['Yes, place the demo trade', 'Show me open markets'],
+    followUps: ['Yes, confirm the trade', 'Show me open markets'],
   }
 }
 
@@ -145,7 +145,7 @@ async function prepareSwapTrade(
       kind: 'swap',
       quote,
     },
-    followUps: ['Yes, place the demo trade', 'Show me open markets'],
+    followUps: ['Yes, confirm the swap', 'Show me open markets'],
   }
 }
 

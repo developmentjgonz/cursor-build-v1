@@ -13,11 +13,11 @@ export function explainPredictionQuote(quote: PredictionQuote): string {
   const payout = formatUsd(quote.potentialPayoutUsd)
   const profit = formatUsd(Math.max(quote.potentialPayoutUsd - quote.costUsd, 0))
 
-  return `Here’s the call on “${quote.marketTitle}.” You’re buying ${quote.outcome} at about ${chance}. You put in ${stake} now. If you’re right, it pays about ${payout} — that’s roughly ${profit} profit. If you’re wrong, that ${stake} is gone. Want me to place this demo trade?`
+  return `Here’s the call on “${quote.marketTitle}.” You’re buying ${quote.outcome} at about ${chance}. You put in ${stake} now. If you’re right, it pays about ${payout} — that’s roughly ${profit} profit. If you’re wrong, that ${stake} is gone. Want me to confirm this trade?`
 }
 
 export function explainSwapQuote(quote: SwapQuote): string {
-  return `Here’s the swap: ${quote.inputAmount.toPrecision(3)} ${quote.inputToken} for about ${quote.expectedOutputAmount.toFixed(2)} ${quote.outputToken}. Want me to place this demo trade?`
+  return `Here’s the swap: ${quote.inputAmount.toPrecision(3)} ${quote.inputToken} for about ${quote.expectedOutputAmount.toFixed(2)} ${quote.outputToken}. Want me to confirm this swap?`
 }
 
 export function buildTradeCelebration(quote: TradeQuote): DiloReply {
@@ -26,7 +26,7 @@ export function buildTradeCelebration(quote: TradeQuote): DiloReply {
     const payout = formatUsd(quote.potentialPayoutUsd)
 
     return {
-      text: `Congrats — demo trade placed. You’re on ${quote.outcome} for “${quote.marketTitle}” with ${stake} in. If it hits, you’re looking at about ${payout} back. Nothing real moved; this is a practice fill.`,
+      text: `Got it — your trade request is confirmed. You’re on ${quote.outcome} for “${quote.marketTitle}” with ${stake} in. If it hits, you’re looking at about ${payout} back.`,
       followUps: [
         'Show me open markets',
         'What are the hottest memecoins?',
@@ -35,7 +35,7 @@ export function buildTradeCelebration(quote: TradeQuote): DiloReply {
   }
 
   return {
-    text: `Congrats — demo swap placed. ${quote.inputAmount.toPrecision(3)} ${quote.inputToken} into about ${quote.expectedOutputAmount.toFixed(2)} ${quote.outputToken}. Nothing real moved; this is a practice fill.`,
+    text: `Got it — your swap request is confirmed. ${quote.inputAmount.toPrecision(3)} ${quote.inputToken} into about ${quote.expectedOutputAmount.toFixed(2)} ${quote.outputToken}.`,
     followUps: [
       'What are the hottest memecoins?',
       'Show me open markets',

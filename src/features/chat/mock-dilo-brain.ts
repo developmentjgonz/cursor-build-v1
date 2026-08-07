@@ -273,7 +273,7 @@ async function createPredictionReply(prompt: string): Promise<DiloReply> {
         kind: 'prediction',
         quote,
       },
-      followUps: ['Yes, place the demo trade', 'Show me open markets'],
+      followUps: ['Yes, confirm the trade', 'Show me open markets'],
     }
   } catch {
     return {

@@ -539,7 +539,7 @@ function IntentActions({ onApproveTrade }: { onApproveTrade?: () => void }) {
               onApproveTrade?.()
             }}
           >
-            Place demo trade
+            Confirm trade
           </Button>
           {/* Quiet on purpose: a second full-width bordered button read as a
               rival to the primary action. */}
@@ -558,7 +558,7 @@ function IntentActions({ onApproveTrade }: { onApproveTrade?: () => void }) {
         <StatusLine
           tone="positive"
           icon={<CircleCheck className="size-4 shrink-0" aria-hidden="true" />}
-          text="Demo trade placed. Congrats — practice fill complete."
+          text="Trade request confirmed."
         />
       ) : null}
 

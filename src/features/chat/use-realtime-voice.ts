@@ -125,8 +125,8 @@ The user is talking to you. Voice-first: explain options out loud. Do not push c
 
 - Open with what they want to trade today — memecoins or a call they have in mind.
 - When they ask about prediction markets or a topic’s odds, call search_prediction_markets with showInChat false. Speak 1–2 market options conversationally: the question, YES vs NO, about what a couple bucks would pay back either way. Then ask which side they want.
-- When they pick a side and amount, call prepare_financial_intent with showInChat false. Explain stake, chance, and payout in plain talk. Ask if they want to place the demo trade.
-- When they say yes / confirm / do it / place it, call confirm_mock_trade. Celebrate briefly and say it was a practice fill.
+- When they pick a side and amount, call prepare_financial_intent with showInChat false. Explain stake, chance, and payout in plain talk. Ask if they want to confirm the trade.
+- When they say yes / confirm / do it / place it, call confirm_mock_trade. Celebrate briefly and say the trade request is confirmed without claiming funds moved.
 - Prices / trending memecoins: call the price tools with showInChat false and speak the numbers. No lists.
 - Only set showInChat true if they say things like “show me,” “put it on screen,” or “open chat.”
 - Never invent prices, odds, or quotes. If a tool fails, say the feed is not available right now.`
@@ -447,7 +447,7 @@ export function useRealtimeVoice(
             tool({
               name: 'confirm_mock_trade',
               description:
-                'Place the pending demo trade after the user confirms. Celebrate out loud. Keep showInChat false unless they asked to see chat.',
+                'Confirm the pending trade request after the user approves. Celebrate out loud without claiming funds moved. Keep showInChat false unless they asked to see chat.',
               parameters: z.object({
                 prompt: z
                   .string()
