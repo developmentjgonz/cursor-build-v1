@@ -1,130 +1,97 @@
-import {
-  ArrowLeft,
-  KeyRound,
-  MessageSquareText,
-  ReceiptText,
-  type LucideIcon,
-} from 'lucide-react'
-import { motion, useReducedMotion, type Variants } from 'motion/react'
+import { ArrowLeft, ChevronRight, ShieldCheck } from 'lucide-react'
 
+import { DiloWordmark } from '../../components/brand/dilo-wordmark'
+import { DiloAvatar } from '../../components/dilo/dilo-avatar'
 import { Button } from '../../components/ui/button'
-import { InfoCard } from '../../components/ui/panel'
 import {
   Screen,
   ScreenBody,
   ScreenFooter,
   ScreenTop,
 } from '../../components/ui/screen'
+import type { RealtimeVoiceStatus } from '../chat/use-realtime-voice'
+import { BenefitList } from './components/benefit-list'
+import { SetupTimeline } from './components/setup-timeline'
+import { VoiceGuideStatus } from './components/voice-guide-status'
 
 interface HowItWorksScreenProps {
   onContinue: () => void
   onBack: () => void
+  voiceStatus?: RealtimeVoiceStatus
+  voiceErrorMessage?: string | null
 }
 
-interface HowItWorksStep {
-  id: string
-  title: string
-  body: string
-  Icon: LucideIcon
-}
-
-const steps: readonly HowItWorksStep[] = [
-  {
-    id: 'describe',
-    title: 'Say it in your own words',
-    body: 'Type what you want to do in English or Spanish. No tickers, routes, or slippage settings to learn.',
-    Icon: MessageSquareText,
-  },
-  {
-    id: 'review',
-    title: 'Read the Intent Receipt',
-    body: 'Dilo shows the exact amounts, the route it will take, and every fee before anything moves.',
-    Icon: ReceiptText,
-  },
-  {
-    id: 'sign',
-    title: 'Sign it yourself',
-    body: 'The transaction opens in your own wallet. Dilo never holds your keys and cannot move your funds.',
-    Icon: KeyRound,
-  },
-]
-
-export function HowItWorksScreen({ onContinue, onBack }: HowItWorksScreenProps) {
-  const shouldReduceMotion = useReducedMotion()
-  const rise = shouldReduceMotion ? 0 : 10
-
-  const listVariants: Variants = {
-    hidden: {},
-    visible: { transition: { staggerChildren: 0.04, delayChildren: 0.06 } },
-  }
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: rise },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { type: 'spring', stiffness: 320, damping: 34 },
-    },
-  }
-
+export function HowItWorksScreen({
+  onContinue,
+  onBack,
+  voiceStatus = 'disconnected',
+  voiceErrorMessage = null,
+}: HowItWorksScreenProps) {
   return (
     <Screen>
       <ScreenTop>
-        <Button
-          variant="subtle"
-          size="icon"
-          onClick={onBack}
-          aria-label="Back to welcome"
-        >
-          <ArrowLeft className="size-5" aria-hidden="true" />
-        </Button>
-        <span className="text-xs font-bold uppercase tracking-[0.12em] text-faint">
-          How Dilo works
-        </span>
-        <span className="size-11 shrink-0" aria-hidden="true" />
-      </ScreenTop>
-
-      <ScreenBody className="flex flex-col gap-5 pt-2">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-[1.75rem] font-extrabold leading-tight tracking-[-0.035em]">
-            Three steps, every time
-          </h1>
-          <p className="text-[0.9375rem] leading-relaxed text-muted">
-            Dilo prepares the transaction and explains it. You stay in control of
-            the wallet and the final word.
-          </p>
+        <div className="flex min-w-0 items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="-ml-2.5"
+            onClick={onBack}
+            aria-label="Back to welcome"
+          >
+            <ArrowLeft className="size-5" aria-hidden="true" />
+          </Button>
+          <DiloWordmark size="md" />
         </div>
 
-        <motion.ol
-          variants={listVariants}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col gap-3"
+        <span
+          aria-hidden="true"
+          className="grid size-10 shrink-0 place-items-center rounded-full border border-aqua/40 bg-aqua/10 text-aqua"
         >
-          {steps.map(({ id, title, body, Icon }, index) => (
-            <motion.li key={id} variants={itemVariants}>
-              <InfoCard
-                icon={
-                  <span className="text-[0.9375rem] font-extrabold tabular-nums">
-                    {index + 1}
-                  </span>
-                }
-                title={title}
-                body={body}
-                trailing={<Icon className="size-5" strokeWidth={2.2} />}
-              />
-            </motion.li>
-          ))}
-        </motion.ol>
+          <ShieldCheck className="size-5" />
+        </span>
+      </ScreenTop>
+
+      <ScreenBody className="flex flex-col pt-2">
+        <div className="flex items-center gap-4">
+          <DiloAvatar mood="happy" size={104} hasGlow label="Dilo" />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[1.625rem] leading-[1.15] font-extrabold tracking-[-0.03em] text-ink">
+              Your wallet is ready
+              <span className="text-brand block">Next, add funds</span>
+            </h1>
+            <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
+              Dilo makes Solana simple and secure for everyone.
+            </p>
+          </div>
+        </div>
+
+        <SetupTimeline className="mt-8" />
+        <BenefitList className="mt-7" />
       </ScreenBody>
 
       <ScreenFooter>
-        <Button variant="brand" size="lg" block onClick={onContinue}>
-          Add funds
+        <Button
+          variant="brand"
+          size="lg"
+          block
+          className="relative"
+          onClick={onContinue}
+        >
+          <span>Add funds</span>
+          <ChevronRight className="absolute right-5 size-5" aria-hidden="true" />
         </Button>
-        <p className="text-[0.8125rem] text-faint">
-          You can add funds later from your wallet.
-        </p>
+
+        <VoiceGuideStatus
+          status={voiceStatus}
+          errorMessage={voiceErrorMessage}
+        />
+
+        <p className="sr-only">Step 2 of 3</p>
+        <span aria-hidden="true" className="flex items-center gap-2">
+          <span className="size-1.5 rounded-full bg-midnight-500" />
+          <span className="size-2 rounded-full bg-brand" />
+          <span className="size-1.5 rounded-full bg-midnight-500" />
+        </span>
       </ScreenFooter>
     </Screen>
   )

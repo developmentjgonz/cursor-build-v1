@@ -16,7 +16,7 @@ export function DiloWordmark({ size = 'md', className }: DiloWordmarkProps) {
   return (
     <span
       className={cn(
-        'text-brand inline-block font-extrabold tracking-[-0.045em]',
+        'text-brand inline-block font-extrabold tracking-[-0.03em]',
         sizeClassNames[size],
         className,
       )}

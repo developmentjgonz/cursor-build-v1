@@ -8,6 +8,8 @@ export const predictionMarketSchema = z.object({
   closesAt: z.string().datetime(),
   isTradingAvailable: z.boolean(),
   isSimulated: z.boolean().optional(),
+  category: z.string().min(1).optional(),
+  volumeUsd: z.number().nonnegative().optional(),
 })
 
 export const predictionMarketsSchema = z.array(predictionMarketSchema)

@@ -16,11 +16,11 @@ const starterPrompts: readonly string[] = [
 
 export function ChatEmptyState({ onSelect }: ChatEmptyStateProps) {
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-6 py-10 text-center">
+    <div className="flex min-h-full flex-col items-center justify-center gap-7 py-10 text-center">
       <DiloAvatar mood="waving" size={104} hasGlow label="Dilo" />
 
       <div className="flex flex-col gap-2">
-        <h2 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.035em] text-ink">
+        <h2 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em] text-ink">
           What would you like to do?
         </h2>
         <p className="text-[0.9375rem] leading-relaxed text-muted">

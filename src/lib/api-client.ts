@@ -2,18 +2,10 @@ import type { ZodType } from 'zod'
 
 import { apiFailureSchema } from '../../shared/contracts/api'
 
-export async function postApi<T>(
-  path: string,
-  body: unknown,
+async function parseApiResponse<T>(
+  response: Response,
   schema: ZodType<T>,
 ): Promise<T> {
-  const response = await fetch(path, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
   const responseBody: unknown = await response.json()
 
   if (!response.ok) {
@@ -36,4 +28,34 @@ export async function postApi<T>(
   }
 
   return payload.data
+}
+
+export async function getApi<T>(
+  path: string,
+  schema: ZodType<T>,
+): Promise<T> {
+  const response = await fetch(path, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  return parseApiResponse(response, schema)
+}
+
+export async function postApi<T>(
+  path: string,
+  body: unknown,
+  schema: ZodType<T>,
+): Promise<T> {
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  return parseApiResponse(response, schema)
 }

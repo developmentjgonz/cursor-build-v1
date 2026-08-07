@@ -12,16 +12,16 @@ export function ProcessingStep({ amountUsd, methodLabel }: ProcessingStepProps) 
   const shouldReduceMotion = useReducedMotion()
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="m-auto flex w-full flex-col items-center gap-5 py-8 text-center">
-        <DiloAvatar mood="thinking" size={112} hasGlow label="Dilo is working" />
+    <div className="flex min-h-full flex-col">
+      <div className="m-auto flex w-full flex-col items-center gap-6 py-10 text-center">
+        <DiloAvatar mood="thinking" size={116} hasGlow label="Dilo is working" />
 
         <div className="flex flex-col gap-2">
-          <h1 className="text-[1.75rem] font-extrabold leading-tight tracking-[-0.035em]">
+          <h1 className="text-[1.75rem] font-extrabold leading-tight tracking-[-0.03em]">
             Adding {formatUsd(amountUsd)}
           </h1>
           <p className="text-[0.9375rem] leading-relaxed text-muted">
-            Confirming with {methodLabel}. This takes a few seconds.
+            Confirming your {methodLabel} deposit. This takes a few seconds.
           </p>
         </div>
 
@@ -39,7 +39,8 @@ export function ProcessingStep({ amountUsd, methodLabel }: ProcessingStepProps) 
         </div>
 
         <p className="sr-only" role="status" aria-live="polite">
-          Adding {formatUsd(amountUsd)} with {methodLabel}. Please wait.
+          Adding {formatUsd(amountUsd)} with your {methodLabel} deposit. Please
+          wait.
         </p>
       </div>
     </div>

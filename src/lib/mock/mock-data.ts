@@ -2,6 +2,9 @@ import type {
   PredictionQuote,
   SwapQuote,
 } from '../../../shared/contracts/quote'
+import type { TrendingToken } from '../../../shared/contracts/token'
+
+export type { TrendingToken }
 
 export interface WalletHolding {
   symbol: string
@@ -9,15 +12,6 @@ export interface WalletHolding {
   amount: number
   valueUsd: number
   change24hPercentage: number
-}
-
-export interface TrendingToken {
-  symbol: string
-  name: string
-  priceUsd: number
-  change24hPercentage: number
-  volume24hUsd: number
-  trend: number[]
 }
 
 export interface PredictionMarketSummary {

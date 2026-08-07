@@ -28,7 +28,7 @@ export function Screen({ children, className }: ScreenProps) {
       transition={screenTransition}
       className={cn(
         'relative flex h-svh w-full flex-col overflow-hidden bg-midnight-900',
-        'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-[46%] before:bg-[radial-gradient(110%_100%_at_50%_0%,color-mix(in_oklab,var(--color-violet-neon)_20%,transparent),transparent_68%)]',
+        'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-[46%] before:bg-[radial-gradient(110%_100%_at_50%_0%,color-mix(in_oklab,var(--color-violet-deep)_24%,transparent),transparent_68%)]',
         'sm:mx-auto sm:my-6 sm:h-[calc(100svh-3rem)] sm:max-w-[440px] sm:rounded-2xl sm:border sm:border-midnight-600 sm:shadow-device',
         className,
       )}
@@ -68,7 +68,8 @@ export function ScreenFooter({ children, className }: ScreenSlotProps) {
   return (
     <div
       className={cn(
-        'relative z-10 flex shrink-0 flex-col items-center gap-3 px-5 pt-3 pb-safe',
+        'relative z-20 flex shrink-0 flex-col items-center gap-3 border-t border-midnight-800/80 bg-midnight-900 px-5 pt-3 pb-safe',
+        'before:pointer-events-none before:absolute before:inset-x-0 before:-top-8 before:h-8 before:bg-gradient-to-t before:from-midnight-900 before:to-transparent',
         className,
       )}
     >

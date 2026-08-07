@@ -8,6 +8,7 @@ import {
 } from '../dflow/mapper'
 import { getServerEnv } from '../env'
 import { buildSimulatedQuote, getSimulatedMarket } from './fixtures'
+import { getLiveMarketById } from './markets'
 import { resolvePredictionMode } from './mode'
 
 const USDC_DECIMALS = 6
@@ -153,6 +154,16 @@ export async function getPredictionQuote(params: {
       isSimulated: false,
     }
   } catch {
+    const liveMarket = await getLiveMarketById(params.marketId)
+    if (liveMarket) {
+      // Live odds from Kalshi public data; settlement still needs DFlow + KYC.
+      return {
+        ...buildSimulatedQuote(params.intent, liveMarket),
+        marketTitle: liveMarket.title,
+        isSimulated: true,
+      }
+    }
+
     const simulatedMarket = getSimulatedMarket(params.marketId)
     if (simulatedMarket) {
       return buildSimulatedQuote(params.intent, simulatedMarket)

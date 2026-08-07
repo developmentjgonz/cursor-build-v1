@@ -20,13 +20,13 @@ export function StepProgress({
       aria-valuemax={labels.length}
       aria-valuenow={currentIndex + 1}
       aria-valuetext={`Step ${currentIndex + 1} of ${labels.length}: ${currentLabel}`}
-      className={cn('flex flex-1 items-center gap-1.5', className)}
+      className={cn('flex items-center gap-1', className)}
     >
       {labels.map((label, index) => (
         <span
           key={label}
           className={cn(
-            'h-1 flex-1 rounded-full transition-colors duration-300',
+            'h-0.5 flex-1 rounded-full transition-colors duration-300',
             index <= currentIndex ? 'bg-brand' : 'bg-midnight-700',
           )}
         />

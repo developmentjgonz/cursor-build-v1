@@ -11,6 +11,7 @@ interface AppHeaderProps {
 
 const walletLabels: Record<MockWallet['status'], string> = {
   disconnected: 'Connect',
+  creating: 'Creating',
   connecting: 'Connecting',
   connected: 'Connected',
 }
@@ -33,14 +34,17 @@ export function AppHeader({ wallet }: AppHeaderProps) {
         type="button"
         whileTap={{ scale: 0.96 }}
         onClick={isConnected ? wallet.disconnect : wallet.connect}
-        disabled={wallet.status === 'connecting'}
+        disabled={
+          wallet.status === 'connecting' || wallet.status === 'creating'
+        }
         className="flex min-h-9 items-center gap-2 rounded-full border border-midnight-600 bg-midnight-800 px-3.5 text-[0.8125rem] font-bold text-ink transition-colors hover:border-aqua disabled:opacity-70"
       >
         <span
           className={cn(
             'size-2 rounded-full',
             isConnected ? 'bg-up shadow-glow-mint' : 'bg-midnight-400',
-            wallet.status === 'connecting' && 'animate-pulse bg-warn',
+            (wallet.status === 'connecting' || wallet.status === 'creating') &&
+              'animate-pulse bg-warn',
           )}
           aria-hidden="true"
         />

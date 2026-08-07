@@ -11,10 +11,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         brand:
-          'bg-brand text-on-brand shadow-cta disabled:bg-none disabled:bg-midnight-700 disabled:text-midnight-400 disabled:shadow-none',
+          'bg-brand text-on-brand shadow-cta transition-[filter,box-shadow] hover:brightness-108 disabled:bg-none disabled:bg-midnight-700 disabled:text-faint disabled:shadow-none',
         outline:
           'border border-midnight-500 bg-midnight-800 text-ink hover:border-aqua',
-        ghost: 'text-violet-neon hover:bg-violet-neon/10',
+        ghost: 'text-violet-neon hover:bg-violet-neon/12',
         subtle:
           'border border-midnight-600 bg-midnight-850 text-muted hover:text-ink',
       },

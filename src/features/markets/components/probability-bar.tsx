@@ -1,13 +1,15 @@
 import { motion } from 'motion/react'
 
+import { cn } from '../../../lib/cn'
 import { formatProbability } from '../../../lib/format'
-import { listSpring } from './stagger'
+import { listSpring } from './motion'
 
 interface ProbabilityBarProps {
   yesProbability: number
   label: string
   delaySeconds: number
   isReducedMotion: boolean
+  className?: string
 }
 
 export function ProbabilityBar({
@@ -15,13 +17,14 @@ export function ProbabilityBar({
   label,
   delaySeconds,
   isReducedMotion,
+  className,
 }: ProbabilityBarProps) {
   const yesPercentage = Math.round(yesProbability * 100)
   const targetWidth = `${yesPercentage}%`
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-baseline justify-between text-[0.8125rem]">
+    <div className={cn('flex flex-col gap-1.5', className)}>
+      <div className="flex items-baseline justify-between gap-3 text-[0.8125rem]">
         <span className="text-muted">
           Yes{' '}
           <span className="font-bold tabular-nums text-mint">

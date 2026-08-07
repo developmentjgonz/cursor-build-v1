@@ -37,7 +37,7 @@ export function DiloAvatar({
       className={cn(
         'relative inline-block shrink-0 leading-none',
         hasGlow &&
-          'before:absolute before:-inset-[18%] before:rounded-full before:bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-violet-neon)_42%,transparent),transparent_66%)]',
+          'before:absolute before:-inset-[18%] before:rounded-full before:bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-violet-deep)_48%,transparent),transparent_66%)]',
         className,
       )}
       style={{ width: size, height: size }}
@@ -53,7 +53,7 @@ export function DiloAvatar({
           <linearGradient id={gradientId} x1="12%" y1="6%" x2="88%" y2="96%">
             <stop offset="0%" stopColor="var(--color-mint)" />
             <stop offset="46%" stopColor="var(--color-aqua)" />
-            <stop offset="100%" stopColor="var(--color-magenta-neon)" />
+            <stop offset="100%" stopColor="var(--color-violet-deep)" />
           </linearGradient>
         </defs>
 

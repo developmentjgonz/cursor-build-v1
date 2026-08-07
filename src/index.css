@@ -19,17 +19,20 @@
   --color-midnight-100: oklch(0.9 0.015 264);
   --color-midnight-50: oklch(0.98 0.004 264);
 
-  /* Neon brand ramp */
+  /* Neon brand ramp. The bright stops are the only ones a dark label may sit
+     on; the deep stops are for glows and accents that carry no text. */
   --color-mint: oklch(0.85 0.14 178);
   --color-mint-deep: oklch(0.72 0.14 172);
   --color-aqua: oklch(0.79 0.12 216);
-  --color-violet-neon: oklch(0.7 0.17 292);
-  --color-magenta-neon: oklch(0.68 0.21 312);
+  --color-violet-neon: oklch(0.76 0.134 292);
+  --color-magenta-neon: oklch(0.755 0.158 312);
+  --color-violet-deep: oklch(0.62 0.19 292);
+  --color-magenta-deep: oklch(0.6 0.21 312);
 
   /* Semantic */
   --color-ink: oklch(0.98 0.004 264);
   --color-muted: oklch(0.79 0.03 264);
-  --color-faint: oklch(0.68 0.04 264);
+  --color-faint: oklch(0.775 0.034 264);
   --color-on-brand: oklch(0.16 0.03 264);
   --color-up: oklch(0.85 0.15 168);
   --color-down: oklch(0.75 0.16 18);
@@ -37,17 +40,17 @@
 
   --radius-xs: 8px;
   --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
   --radius-2xl: 30px;
 
-  --shadow-glow-mint: 0 0 32px oklch(0.85 0.14 178 / 0.32);
-  --shadow-glow-violet: 0 0 40px oklch(0.7 0.17 292 / 0.38);
-  --shadow-cta: 0 14px 34px oklch(0.7 0.17 292 / 0.3);
-  --shadow-panel: 0 2px 12px oklch(0.08 0.02 264 / 0.5);
-  --shadow-raised: 0 18px 44px oklch(0.06 0.02 264 / 0.55);
-  --shadow-device: 0 40px 110px oklch(0.05 0.02 264 / 0.75);
+  --shadow-glow-mint: 0 0 32px oklch(0.85 0.14 178 / 0.3);
+  --shadow-glow-violet: 0 0 40px oklch(0.62 0.19 292 / 0.4);
+  --shadow-cta: 0 10px 28px -6px oklch(0.62 0.19 292 / 0.45);
+  --shadow-panel: 0 2px 12px -2px oklch(0.08 0.02 264 / 0.55);
+  --shadow-raised: 0 14px 40px -12px oklch(0.06 0.02 264 / 0.7);
+  --shadow-device: 0 40px 110px -20px oklch(0.05 0.02 264 / 0.8);
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -57,6 +60,8 @@
   --animate-wave: wave 1.6s var(--ease-out-quint) infinite;
   --animate-shimmer: shimmer 2.6s linear infinite;
   --animate-typing: typing 1.1s var(--ease-out-quint) infinite;
+  --animate-voice-breathe: voice-breathe 2.8s var(--ease-out-quint) infinite;
+  --animate-voice-ring: voice-ring 2.6s var(--ease-out-quint) infinite;
 
   @keyframes float {
     0%,
@@ -114,6 +119,33 @@
     50% {
       opacity: 1;
       transform: translateY(-3px);
+    }
+  }
+
+  @keyframes voice-breathe {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.42;
+    }
+    50% {
+      transform: scale(1.035);
+      opacity: 0.78;
+    }
+  }
+
+  @keyframes voice-ring {
+    0% {
+      transform: scale(0.96);
+      opacity: 0.5;
+    }
+    72% {
+      transform: scale(1.14);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.14);
+      opacity: 0;
     }
   }
 }
@@ -192,8 +224,8 @@
       100deg,
       var(--color-mint),
       var(--color-aqua) 40%,
-      var(--color-violet-neon) 78%,
-      var(--color-magenta-neon)
+      var(--color-violet-deep) 78%,
+      var(--color-magenta-deep)
     );
   background-clip: padding-box, border-box;
   background-origin: border-box;

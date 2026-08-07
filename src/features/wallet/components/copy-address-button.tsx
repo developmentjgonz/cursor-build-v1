@@ -1,48 +1,54 @@
-import { Check, Copy } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { Check, Copy, TriangleAlert } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useState } from 'react'
+
+import { pressSpring } from '../../markets/components/motion'
 
 interface CopyAddressButtonProps {
   address: string
 }
 
+type CopyStatus = 'idle' | 'copied' | 'failed'
+
 const confirmationDurationMs = 2000
 
 export function CopyAddressButton({ address }: CopyAddressButtonProps) {
-  const [hasCopied, setHasCopied] = useState(false)
+  const [status, setStatus] = useState<CopyStatus>('idle')
+  const isReducedMotion = useReducedMotion() ?? false
 
   useEffect(() => {
-    if (!hasCopied) {
+    if (status === 'idle') {
       return
     }
 
     const timeoutId = window.setTimeout(() => {
-      setHasCopied(false)
+      setStatus('idle')
     }, confirmationDurationMs)
 
     return () => window.clearTimeout(timeoutId)
-  }, [hasCopied])
+  }, [status])
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(address)
-      setHasCopied(true)
+      setStatus('copied')
     } catch {
-      setHasCopied(false)
+      setStatus('failed')
     }
   }
 
+  const hasCopied = status === 'copied'
   const Icon = hasCopied ? Check : Copy
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
       <motion.button
         type="button"
         whileTap={{ scale: 0.97 }}
-        transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+        transition={pressSpring}
         onClick={handleCopy}
         aria-label={`Copy wallet address ${address}`}
-        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-midnight-600 bg-midnight-850 px-3.5 text-[0.8125rem] font-bold tabular-nums text-muted transition-colors hover:border-aqua hover:text-ink"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-midnight-600 bg-midnight-850 px-4 text-[0.8125rem] font-bold tabular-nums text-muted transition-colors hover:border-aqua hover:text-ink active:bg-midnight-800"
       >
         {shortenAddress(address)}
         <Icon
@@ -52,25 +58,40 @@ export function CopyAddressButton({ address }: CopyAddressButtonProps) {
         />
       </motion.button>
 
-      <span
+      {/* Confirmation and failure both carry an icon and a word, never a tint
+          on its own. */}
+      <p
         aria-live="polite"
-        className="text-[0.75rem] font-bold text-mint"
+        className="inline-flex min-h-5 items-center gap-1 text-[0.75rem] font-bold"
       >
-        <AnimatePresence initial={false}>
-          {hasCopied ? (
+        <AnimatePresence initial={false} mode="wait">
+          {status === 'idle' ? null : (
             <motion.span
-              key="copied"
+              key={status}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.16 }}
-              className="inline-block"
+              transition={{ duration: isReducedMotion ? 0 : 0.16 }}
+              className={
+                hasCopied
+                  ? 'inline-flex items-center gap-1 text-mint'
+                  : 'inline-flex items-center gap-1 text-warn'
+              }
             >
-              Copied
+              {hasCopied ? (
+                <Check className="size-3.5" strokeWidth={2.6} aria-hidden="true" />
+              ) : (
+                <TriangleAlert
+                  className="size-3.5"
+                  strokeWidth={2.6}
+                  aria-hidden="true"
+                />
+              )}
+              {hasCopied ? 'Copied' : 'Copy failed'}
             </motion.span>
-          ) : null}
+          )}
         </AnimatePresence>
-      </span>
+      </p>
     </div>
   )
 }

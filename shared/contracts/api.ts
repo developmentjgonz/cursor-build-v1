@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { predictionIntentSchema, swapIntentSchema } from './intent'
 import { predictionMarketsSchema } from './prediction-market'
 import { predictionQuoteSchema, swapQuoteSchema } from './quote'
+import { trendingTokensSchema } from './token'
 
 const walletAddressSchema = z.string().trim().min(32).max(44)
 
@@ -22,11 +23,28 @@ export const buildSwapTransactionRequestSchema = z.object({
 })
 
 export const predictionMarketsRequestSchema = z.object({
-  query: z.string().trim().min(1).max(300),
+  // Empty query returns a live browse list of open markets.
+  query: z.string().trim().max(300).optional().default(''),
 })
 
 export const predictionMarketsResponseSchema = z.object({
   markets: predictionMarketsSchema,
+  isSimulated: z.boolean(),
+  message: z.string().min(1),
+})
+
+export const trendingTokensResponseSchema = z.object({
+  tokens: trendingTokensSchema,
+  isSimulated: z.boolean(),
+  message: z.string().min(1),
+})
+
+export const tokenPricesRequestSchema = z.object({
+  symbols: z.array(z.string().trim().min(1).max(16)).min(1).max(20),
+})
+
+export const tokenPricesResponseSchema = z.object({
+  tokens: trendingTokensSchema,
   isSimulated: z.boolean(),
   message: z.string().min(1),
 })
@@ -52,6 +70,14 @@ export const walletEligibilitySchema = z.object({
   requiresKyc: z.boolean(),
   isSimulated: z.boolean(),
   message: z.string().min(1),
+})
+
+export const realtimeSessionRequestSchema = z.object({
+  clientId: z.uuid(),
+})
+
+export const realtimeSessionSchema = z.object({
+  clientSecret: z.string().min(1),
 })
 
 export const serializedTransactionSchema = z.object({
@@ -93,6 +119,11 @@ export type PredictionMarketsRequest = z.infer<
 export type PredictionMarketsResponse = z.infer<
   typeof predictionMarketsResponseSchema
 >
+export type TrendingTokensResponse = z.infer<
+  typeof trendingTokensResponseSchema
+>
+export type TokenPricesRequest = z.infer<typeof tokenPricesRequestSchema>
+export type TokenPricesResponse = z.infer<typeof tokenPricesResponseSchema>
 export type PredictionQuoteRequest = z.infer<typeof predictionQuoteRequestSchema>
 export type BuildPredictionTransactionRequest = z.infer<
   typeof buildPredictionTransactionRequestSchema
@@ -101,4 +132,8 @@ export type WalletEligibilityRequest = z.infer<
   typeof walletEligibilityRequestSchema
 >
 export type WalletEligibility = z.infer<typeof walletEligibilitySchema>
+export type RealtimeSessionRequest = z.infer<
+  typeof realtimeSessionRequestSchema
+>
+export type RealtimeSession = z.infer<typeof realtimeSessionSchema>
 export type SerializedTransaction = z.infer<typeof serializedTransactionSchema>

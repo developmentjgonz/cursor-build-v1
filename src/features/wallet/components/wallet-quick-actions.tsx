@@ -7,6 +7,11 @@ import {
 import { useId } from 'react'
 
 import { Button } from '../../../components/ui/button'
+import { cn } from '../../../lib/cn'
+
+interface QuickActionsProps {
+  className?: string
+}
 
 interface QuickAction {
   id: string
@@ -20,11 +25,13 @@ const quickActions: readonly QuickAction[] = [
   { id: 'swap', label: 'Swap', Icon: ArrowLeftRight },
 ]
 
-export function WalletQuickActions() {
+export function WalletQuickActions({ className }: QuickActionsProps) {
   const captionId = useId()
 
   return (
-    <div>
+    <div className={cn(className)}>
+      {/* Unavailability is carried by the caption below, not by a dimmed
+          label, so the state survives without colour. */}
       <div className="grid grid-cols-3 gap-2">
         {quickActions.map(({ id, label, Icon }) => (
           <Button
@@ -33,7 +40,7 @@ export function WalletQuickActions() {
             size="md"
             disabled
             aria-describedby={captionId}
-            className="min-h-16 flex-col gap-1.5 px-2 text-[0.75rem] disabled:text-midnight-400"
+            className="min-h-16 flex-col gap-1.5 px-2 text-[0.75rem] disabled:border-midnight-700 disabled:bg-midnight-900 disabled:text-faint"
           >
             <Icon className="size-[18px]" strokeWidth={2.2} aria-hidden="true" />
             {label}
@@ -42,7 +49,10 @@ export function WalletQuickActions() {
         ))}
       </div>
 
-      <p id={captionId} className="mt-2 text-center text-[0.75rem] text-faint">
+      <p
+        id={captionId}
+        className="mt-2.5 text-center text-[0.75rem] leading-relaxed text-faint"
+      >
         These shortcuts are coming soon. Ask Dilo in chat to move funds today.
       </p>
     </div>

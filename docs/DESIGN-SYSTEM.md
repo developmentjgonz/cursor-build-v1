@@ -31,12 +31,31 @@ chip), `midnight-600` (border), `midnight-500`/`400` (disabled, inactive icons),
 Semantic text: `text-ink` (primary), `text-muted` (secondary), `text-faint`
 (tertiary), `text-on-brand` (dark ink for use on gradient fills).
 
-Brand neons: `mint`, `aqua`, `violet-neon`, `magenta-neon`.
+Brand neons: `mint`, `aqua`, `violet-neon`, `magenta-neon`. The deeper
+`violet-deep` and `magenta-deep` exist only for glows, ambient washes, and
+gradient borders — never behind or as text.
 Status: `up` (green), `down` (red), `warn` (amber).
 
-Radii: `rounded-xs|sm|md|lg|xl|2xl` (8 / 10 / 14 / 18 / 24 / 30px).
+Radii: `rounded-xs|sm|md|lg|xl|2xl` (8 / 10 / 12 / 16 / 22 / 30px). Cards stop
+at `rounded-lg`; `xl` and `2xl` belong to the device frame and full-bleed hero
+surfaces. Pills (`rounded-full`) are for small controls and chips only.
 Shadows: `shadow-glow-mint`, `shadow-glow-violet`, `shadow-cta`, `shadow-panel`,
 `shadow-raised`, `shadow-device`.
+
+### Contrast and elevation are settled — do not relitigate
+
+Every token pairing below has been checked against WCAG 2.2 AA:
+
+- `text-muted` (5.17:1), `text-faint` (4.70:1), `mint`, `aqua`, `violet-neon`,
+  `magenta-neon`, `up`, `down`, and `warn` all clear 4.5:1 on every surface.
+- `text-on-brand` clears 4.5:1 on all four `bg-brand` stops.
+- **`midnight-400` and below fail as text (1.5:1).** Use them for disabled
+  fills, dividers, and decorative strokes only. The lightest legal text token
+  is `text-faint`.
+
+Declare elevation **once**: a border or a shadow, never both on the same
+element. A 1px border under a soft shadow is a ghost card. `Panel` already
+encodes this; do not add `shadow-*` to a bordered element.
 
 ## Custom utilities
 
@@ -59,13 +78,22 @@ own outer padding on top of these slots.
 
 ## Type scale
 
-- Hero balance / headline numerals: `text-5xl font-extrabold tracking-[-0.04em]`
-- Screen title: `text-[1.75rem] font-extrabold tracking-[-0.035em] leading-tight`
-- Section label: `text-xs font-bold uppercase tracking-[0.12em] text-faint`
+- Hero balance / headline numerals: `text-5xl font-extrabold tracking-[-0.03em]`
+- Screen title: `text-[1.75rem] font-extrabold tracking-[-0.03em] leading-tight`
+- Section label: `text-xs font-bold uppercase tracking-[0.1em] text-faint`
 - Body: `text-[0.9375rem] leading-relaxed text-muted`
 - Meta / caption: `text-[0.8125rem] text-faint`
 
-Use `tabular-nums` on any number that updates or sits in a column.
+Tracking never goes tighter than `-0.03em`. Use `tabular-nums` on any number
+that updates or sits in a column.
+
+**Never put a kicker or eyebrow above a heading.** A small uppercase label
+introducing a title underneath it is banned outright — the heading carries its
+own weight. Section labels are legal only when they label a *list or group*
+that follows, not when they sit above a headline. A label directly above a
+large value (a balance, a deposit amount) is also a kicker; give the value a
+visible `<label>` association or an accessible name instead of stacking a
+caption on top of it.
 
 ## Motion vocabulary
 

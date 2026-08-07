@@ -1,22 +1,44 @@
+import type { PredictionMarket } from '../../../shared/contracts/prediction-market'
 import {
-  createMockPredictionQuote,
   createMockSwapQuote,
   mockHoldings,
-  mockPredictionMarkets,
   mockTotalBalanceUsd,
-  mockTrendingTokens,
 } from '../../lib/mock/mock-data'
+import {
+  getPredictionQuote,
+  searchPredictionMarkets,
+} from '../../lib/prediction/prediction-service'
+import {
+  fetchTokenPrices,
+  fetchTrendingTokens,
+} from '../../lib/tokens/token-service'
+import { formatPrice } from '../../lib/format'
 import type { DiloReply } from './chat-types'
+import { explainPredictionQuote } from './mock-trade'
+import { prepareMarketsReply } from './prepare-trade-reply'
 
 const depositPattern = /deposit|dep[oó]sito|add (money|funds|cash)|recarga|fondear/i
 const memecoinPattern = /meme|hottest|hot |trending|pumping|caliente|moviendo/i
+const pricePattern =
+  /\b(price|precio|worth|vale|how much is|cu[aá]nto (vale|cuesta))\b/i
+const trackedTokenPattern = /\b(sol|solana|wif|bonk|popcat|mew)\b/i
 const swapPattern = /swap|cambia|convert|convierte|trade|sell|vende/i
-const marketListPattern = /open markets|what markets|show markets|mercados|prediction markets/i
-const predictionPattern = /predict|bet|apuesta|odds|yes|no |wager/i
+const marketListPattern =
+  /open markets|what markets|show markets|mercados|prediction markets|show me .*market/i
+const predictionPattern = /predict|bet|apuesta|odds|yes|no |wager|put \$?\d+/i
 const balancePattern = /balance|how much|cu[aá]nto|wallet|tengo|holdings|portfolio/i
 const greetingPattern = /^(hi|hey|hola|hello|qu[eé] tal|buenas)\b/i
 const amountPattern = /\$\s?(\d+(?:\.\d+)?)/
 const percentagePattern = /(\d+(?:\.\d+)?)\s?%/
+const quotedTitlePattern = /["“](.+?)["”]/
+const trackedTokenAliases: Record<string, string> = {
+  sol: 'SOL',
+  solana: 'SOL',
+  wif: 'WIF',
+  bonk: 'BONK',
+  popcat: 'POPCAT',
+  mew: 'MEW',
+}
 
 const defaultFollowUps = [
   'How much money do I have?',
@@ -24,7 +46,7 @@ const defaultFollowUps = [
   'Show me open markets',
 ] as const
 
-export function createDiloReply(prompt: string): DiloReply {
+export async function createDiloReply(prompt: string): Promise<DiloReply> {
   if (greetingPattern.test(prompt.trim())) {
     return {
       text: '¡Hola! I can check your wallet, scan what is moving, or set up a swap. What sounds good?',
@@ -41,18 +63,28 @@ export function createDiloReply(prompt: string): DiloReply {
   }
 
   if (memecoinPattern.test(prompt)) {
-    return {
-      text: 'Here is what is moving most on Solana in the last 24 hours. Numbers are mocked while the data feed is wired up.',
-      attachment: { kind: 'tokens', tokens: mockTrendingTokens },
-      followUps: ['Put $10 into WIF', 'How much money do I have?'],
-    }
+    return createTrendingTokensReply()
+  }
+
+  if (pricePattern.test(prompt) || looksLikeTokenPriceAsk(prompt)) {
+    return createTokenPriceReply(prompt)
   }
 
   if (swapPattern.test(prompt)) {
     const amountMatch = amountPattern.exec(prompt)
     const percentageMatch = percentagePattern.exec(prompt)
     const solHolding = mockHoldings.find((holding) => holding.symbol === 'SOL')
-    const solPriceUsd = 154
+    let solPriceUsd = 154
+
+    try {
+      const priced = await fetchTokenPrices({ symbols: ['SOL'] })
+      const liveSol = priced.tokens.find((token) => token.symbol === 'SOL')
+      if (liveSol) {
+        solPriceUsd = liveSol.priceUsd
+      }
+    } catch {
+      // Keep the fallback price for mock swap sizing.
+    }
 
     const inputAmount = amountMatch
       ? Number(amountMatch[1]) / solPriceUsd
@@ -71,27 +103,11 @@ export function createDiloReply(prompt: string): DiloReply {
   }
 
   if (marketListPattern.test(prompt)) {
-    return {
-      text: 'These are the busiest markets right now. Tell me an amount and a side and I will price it.',
-      attachment: { kind: 'markets', markets: mockPredictionMarkets },
-      followUps: ['Put $2 on YES for the Fed cut', 'How much money do I have?'],
-    }
+    return createMarketsReply(prompt)
   }
 
   if (predictionPattern.test(prompt)) {
-    const amountMatch = amountPattern.exec(prompt)
-    const amountUsd = amountMatch ? Number(amountMatch[1]) : 2
-    const outcome = /\bno\b/i.test(prompt) ? 'NO' : 'YES'
-    const market = findMarket(prompt)
-
-    return {
-      text: `Priced at the current book. Buying ${outcome} costs you the stake up front and pays out if the market resolves your way.`,
-      attachment: {
-        kind: 'prediction',
-        quote: createMockPredictionQuote(market, outcome, amountUsd),
-      },
-      followUps: ['Show me open markets', 'How much money do I have?'],
-    }
+    return createPredictionReply(prompt)
   }
 
   if (balancePattern.test(prompt)) {
@@ -106,26 +122,220 @@ export function createDiloReply(prompt: string): DiloReply {
     }
   }
 
+  // Topic-shaped asks like "bitcoin" or "fed rates" should surface markets.
+  if (looksLikeMarketTopic(prompt)) {
+    return createMarketsReply(prompt)
+  }
+
   return {
     text: 'I can handle balances, swaps, trending tokens, and prediction markets. Try one of these and I will show you exactly what would happen.',
     followUps: defaultFollowUps,
   }
 }
 
-function findMarket(prompt: string) {
-  const normalizedPrompt = prompt.toLowerCase()
+async function createTrendingTokensReply(): Promise<DiloReply> {
+  try {
+    const result = await fetchTrendingTokens()
+    const sourceNote = result.isSimulated
+      ? ' These are simulated fallback prices.'
+      : ''
 
-  const titleMatch = mockPredictionMarkets.find((candidate) =>
-    normalizedPrompt.includes(candidate.title.toLowerCase()),
-  )
+    return {
+      text: `Here is what is moving on Solana right now.${sourceNote}`,
+      attachment: { kind: 'tokens', tokens: result.tokens },
+      followUps: ['What is the price of SOL?', 'Put $10 into WIF'],
+    }
+  } catch {
+    return {
+      text: 'Live token prices are unavailable right now. Try again in a moment.',
+      followUps: defaultFollowUps,
+    }
+  }
+}
 
-  if (titleMatch) {
-    return titleMatch
+async function createTokenPriceReply(prompt: string): Promise<DiloReply> {
+  const symbols = extractTrackedSymbols(prompt)
+  const requested = symbols.length > 0 ? symbols : ['SOL']
+
+  try {
+    const result = await fetchTokenPrices({ symbols: requested })
+
+    if (result.tokens.length === 0) {
+      return {
+        text: `I could not find a live price for ${requested.join(', ')}. Try SOL, WIF, BONK, POPCAT, or MEW.`,
+        followUps: ['What are the hottest memecoins?', 'What is the price of SOL?'],
+      }
+    }
+
+    if (result.tokens.length === 1) {
+      const token = result.tokens[0]
+      const change =
+        token.change24hPercentage >= 0
+          ? `up ${token.change24hPercentage.toFixed(2)}%`
+          : `down ${Math.abs(token.change24hPercentage).toFixed(2)}%`
+
+      return {
+        text: `${token.symbol} is ${formatPrice(token.priceUsd)} right now (${change} in 24h).`,
+        attachment: { kind: 'tokens', tokens: result.tokens },
+        followUps: ['What are the hottest memecoins?', `Swap $5 of SOL into USDC`],
+      }
+    }
+
+    return {
+      text: 'Here are the live prices I found.',
+      attachment: { kind: 'tokens', tokens: result.tokens },
+      followUps: ['What are the hottest memecoins?', 'Show me open markets'],
+    }
+  } catch {
+    return {
+      text: 'Live token prices are unavailable right now. Try again in a moment.',
+      followUps: defaultFollowUps,
+    }
+  }
+}
+
+function extractTrackedSymbols(prompt: string): string[] {
+  const matches = prompt.toLowerCase().match(/\b(solana|sol|wif|bonk|popcat|mew)\b/g)
+  if (!matches) {
+    return []
   }
 
-  const categoryMatch = mockPredictionMarkets.find((candidate) =>
-    normalizedPrompt.includes(candidate.category.toLowerCase()),
+  const symbols: string[] = []
+  for (const match of matches) {
+    const symbol = trackedTokenAliases[match]
+    if (symbol && !symbols.includes(symbol)) {
+      symbols.push(symbol)
+    }
+  }
+
+  return symbols
+}
+
+function looksLikeTokenPriceAsk(prompt: string): boolean {
+  if (/put|buy|into|apuesta|bet\b/i.test(prompt)) {
+    return false
+  }
+
+  return (
+    trackedTokenPattern.test(prompt) &&
+    !swapPattern.test(prompt) &&
+    !predictionPattern.test(prompt) &&
+    !marketListPattern.test(prompt) &&
+    !balancePattern.test(prompt)
+  )
+}
+
+async function createMarketsReply(prompt: string): Promise<DiloReply> {
+  const query = extractMarketQuery(prompt)
+
+  try {
+    return await prepareMarketsReply(query)
+  } catch {
+    return {
+      text: 'Live market search is unavailable right now. Try again in a moment.',
+      followUps: defaultFollowUps,
+    }
+  }
+}
+
+async function createPredictionReply(prompt: string): Promise<DiloReply> {
+  const amountMatch = amountPattern.exec(prompt)
+  const amountUsd = amountMatch ? Number(amountMatch[1]) : 2
+  const outcome = /\bno\b/i.test(prompt) ? 'NO' : 'YES'
+  const marketQuery = extractMarketQuery(prompt)
+
+  try {
+    const result = await searchPredictionMarkets({
+      query: marketQuery || 'bitcoin',
+    })
+    const market = findBestMarket(result.markets, prompt)
+
+    if (!market) {
+      return {
+        text: 'I could not match that to an open market. Ask me to show markets for a topic first.',
+        followUps: ['Show me open markets', 'Show me bitcoin markets'],
+      }
+    }
+
+    const quote = await getPredictionQuote({
+      intent: {
+        kind: 'prediction',
+        marketQuery: market.title,
+        outcome,
+        amountUsd,
+      },
+      marketId: market.id,
+    })
+
+    return {
+      text: explainPredictionQuote(quote),
+      attachment: {
+        kind: 'prediction',
+        quote,
+      },
+      followUps: ['Yes, place the demo trade', 'Show me open markets'],
+    }
+  } catch {
+    return {
+      text: 'I could not price that market right now. Try showing open markets and picking one from the list.',
+      followUps: ['Show me open markets'],
+    }
+  }
+}
+
+function extractMarketQuery(prompt: string): string {
+  const quotedTitle = quotedTitlePattern.exec(prompt)?.[1]?.trim()
+  if (quotedTitle) {
+    return quotedTitle
+  }
+
+  return prompt
+    .replace(amountPattern, ' ')
+    .replace(
+      /\b(show me|show|open|what|are|the|prediction|markets?|mercados|put|bet|apuesta|on|yes|no|for|about|odds|wager)\b/gi,
+      ' ',
+    )
+    .replace(/[?!.,]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function looksLikeMarketTopic(prompt: string): boolean {
+  return /btc|bitcoin|eth|ethereum|solana|\bfed\b|fomc|rate cut|trump|election|nba|nfl|sports/i.test(
+    prompt,
+  )
+}
+
+function findBestMarket(
+  markets: readonly PredictionMarket[],
+  prompt: string,
+): PredictionMarket | undefined {
+  if (markets.length === 0) {
+    return undefined
+  }
+
+  const normalizedPrompt = prompt.toLowerCase()
+  const quotedTitle = quotedTitlePattern.exec(prompt)?.[1]?.toLowerCase()
+
+  if (quotedTitle) {
+    const exact = markets.find(
+      (market) => market.title.toLowerCase() === quotedTitle,
+    )
+    if (exact) {
+      return exact
+    }
+
+    const partial = markets.find((market) =>
+      market.title.toLowerCase().includes(quotedTitle),
+    )
+    if (partial) {
+      return partial
+    }
+  }
+
+  const titleMatch = markets.find((market) =>
+    normalizedPrompt.includes(market.title.toLowerCase()),
   )
 
-  return categoryMatch ?? mockPredictionMarkets[1]
+  return titleMatch ?? markets[0]
 }

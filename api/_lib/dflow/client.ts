@@ -5,7 +5,7 @@ import type {
   DflowProofResponse,
 } from './types'
 
-function buildHeaders(apiKey?: string): HeadersInit {
+function buildHeaders(apiKey?: string): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: 'application/json',
   }
@@ -33,7 +33,7 @@ export async function searchDflowEvents(
 ): Promise<DflowEventsResponse> {
   const env = getServerEnv()
   const params = new URLSearchParams({
-    q: query,
+    query,
     withNestedMarkets: 'true',
     status: 'active',
     limit: '20',
@@ -41,6 +41,22 @@ export async function searchDflowEvents(
 
   const response = await fetch(
     `${env.dflowMetadataBaseUrl}/api/v1/search?${params}`,
+    { headers: buildHeaders(env.dflowApiKey) },
+  )
+
+  return readJson<DflowEventsResponse>(response)
+}
+
+export async function listDflowEvents(): Promise<DflowEventsResponse> {
+  const env = getServerEnv()
+  const params = new URLSearchParams({
+    withNestedMarkets: 'true',
+    status: 'active',
+    limit: '20',
+  })
+
+  const response = await fetch(
+    `${env.dflowMetadataBaseUrl}/api/v1/events?${params}`,
     { headers: buildHeaders(env.dflowApiKey) },
   )
 

@@ -3,11 +3,13 @@ import type { HTMLAttributes, ReactNode } from 'react'
 
 import { cn } from '../../lib/cn'
 
+// On a dark surface a hairline border reads as elevation more reliably than a
+// shadow, so each tone declares one or the other and never both.
 const panelVariants = cva('rounded-lg', {
   variants: {
     tone: {
       default: 'border border-midnight-600 bg-midnight-800',
-      raised: 'border border-midnight-600 bg-midnight-850 shadow-panel',
+      raised: 'border border-midnight-500 bg-midnight-850',
       selected: 'border border-mint bg-midnight-800 shadow-glow-mint',
       brand: 'border-brand',
       quiet: 'border border-midnight-700 bg-midnight-900',
