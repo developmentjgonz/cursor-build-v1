@@ -196,5 +196,6 @@ export function createMockPredictionQuote(
     potentialPayoutUsd: amountUsd / probability,
     estimatedFeeSol: 0.000018,
     expiresAt: new Date(Date.now() + 45_000).toISOString(),
+    isSimulated: true,
   }
 }

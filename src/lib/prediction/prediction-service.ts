@@ -1,6 +1,5 @@
 import {
   predictionMarketsResponseSchema,
-  predictionQuoteSchema,
   serializedTransactionSchema,
   walletEligibilitySchema,
   type BuildPredictionTransactionRequest,
@@ -11,7 +10,10 @@ import {
   type WalletEligibility,
   type WalletEligibilityRequest,
 } from '../../../shared/contracts/api'
-import type { PredictionQuote } from '../../../shared/contracts/quote'
+import {
+  predictionQuoteSchema,
+  type PredictionQuote,
+} from '../../../shared/contracts/quote'
 import { postApi } from '../api-client'
 
 export function searchPredictionMarkets(
