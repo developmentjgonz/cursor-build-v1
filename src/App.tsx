@@ -12,6 +12,7 @@ import { Screen } from './components/ui/screen'
 import { AskHome } from './features/chat/ask-home'
 import { ChatView } from './features/chat/chat-view'
 import { useDiloChat } from './features/chat/use-dilo-chat'
+import { stopFinancialVoiceSession } from './features/chat/use-realtime-voice'
 import type { DepositMethodId } from './features/funding/deposit-model'
 import { FundingFlow } from './features/funding/funding-flow'
 import type { FundingVoiceBridge } from './features/funding/funding-voice-bridge'
@@ -91,6 +92,7 @@ export function App() {
   }, [onboarding])
 
   const handleRestartOnboarding = useCallback(() => {
+    stopFinancialVoiceSession()
     wallet.disconnect()
     setAskSurface('home')
     setActiveTab('ask')
@@ -103,6 +105,10 @@ export function App() {
 
   const handleTabChange = useCallback((tab: AppTab) => {
     setActiveTab((currentTab) => {
+      if (tab !== 'ask' && currentTab === 'ask') {
+        stopFinancialVoiceSession()
+      }
+
       if (tab === 'ask' && currentTab === 'ask') {
         setAskSurface('home')
       }

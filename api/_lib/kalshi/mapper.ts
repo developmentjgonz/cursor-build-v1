@@ -1,4 +1,5 @@
 import type { PredictionMarket } from '../../../shared/contracts/prediction-market.js'
+import { filterAndRankMarkets } from '../../../shared/prediction/market-match.js'
 import type { KalshiEvent, KalshiMarket } from './types.js'
 
 const SERIES_HINTS: readonly { pattern: RegExp; seriesTicker: string }[] = [
@@ -124,18 +125,5 @@ export function filterMarketsByQuery(
   markets: PredictionMarket[],
   query: string,
 ): PredictionMarket[] {
-  const tokens = query
-    .trim()
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((token) => token.length > 1)
-
-  if (tokens.length === 0) {
-    return markets
-  }
-
-  return markets.filter((market) => {
-    const haystack = `${market.id} ${market.title} ${market.category ?? ''}`.toLowerCase()
-    return tokens.every((token) => haystack.includes(token))
-  })
+  return filterAndRankMarkets(markets, query)
 }

@@ -36,6 +36,9 @@ For swaps, preserve token symbols and convert them to uppercase.
 For swaps, exactly one of amount or walletPercentage must be non-null.
 An amount is denominated in the input token unless the user explicitly specifies a wallet percentage.
 Only include maximumPriceImpactPercentage when the user states that condition.
+For prediction intents:
+- marketQuery must be the event/topic the user named (e.g. "bitcoin 150k", "Fed rate cut", "Celtics"). Never invent a different topic and never default to bitcoin.
+- outcome must be YES or NO based on the side they chose ("on YES", "on NO", "bet against"). Do not treat incidental words like "no" inside the event description as the NO side. If they say "YES that there is no rate cut", outcome is YES.
 Never invent an amount, token, market, outcome, or condition.`
 
 function normalizeIntent(

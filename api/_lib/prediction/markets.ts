@@ -1,4 +1,5 @@
 import type { PredictionMarket } from '../../../shared/contracts/prediction-market.js'
+import { filterAndRankMarkets } from '../../../shared/prediction/market-match.js'
 import { listDflowEvents, searchDflowEvents } from '../dflow/client.js'
 import { flattenDflowEvents } from '../dflow/mapper.js'
 import { getServerEnv } from '../env.js'
@@ -8,7 +9,6 @@ import {
   listKalshiMarkets,
 } from '../kalshi/client.js'
 import {
-  filterMarketsByQuery,
   flattenKalshiEvents,
   mapKalshiMarketToContract,
   resolveSeriesTickerHint,
@@ -26,6 +26,18 @@ function rankByVolume(markets: PredictionMarket[]): PredictionMarket[] {
   return [...markets].sort(
     (left, right) => (right.volumeUsd ?? 0) - (left.volumeUsd ?? 0),
   )
+}
+
+function finalizeMarkets(
+  markets: PredictionMarket[],
+  query: string,
+): PredictionMarket[] {
+  const trimmedQuery = query.trim()
+  if (!trimmedQuery) {
+    return rankByVolume(markets).slice(0, 12)
+  }
+
+  return filterAndRankMarkets(markets, trimmedQuery).slice(0, 12)
 }
 
 async function searchLiveKalshiMarkets(
@@ -47,17 +59,18 @@ async function searchLiveKalshiMarkets(
       mapKalshiMarketToContract(market),
     )
     const merged = dedupeMarkets([...fromEvents, ...fromMarkets])
-    const filtered = filterMarketsByQuery(merged, trimmedQuery)
-    return rankByVolume(filtered.length > 0 ? filtered : merged).slice(0, 12)
+    const ranked = finalizeMarkets(merged, trimmedQuery)
+
+    // Only accept series results that actually match the query tokens.
+    // Falling back to unfiltered series markets caused “wrong topic” answers.
+    if (ranked.length > 0) {
+      return ranked
+    }
   }
 
   const events = await listKalshiEvents({ limit: trimmedQuery ? 40 : 20 })
   const markets = flattenKalshiEvents(events.events)
-  const filtered = trimmedQuery
-    ? filterMarketsByQuery(markets, trimmedQuery)
-    : markets
-
-  return rankByVolume(filtered).slice(0, 12)
+  return finalizeMarkets(markets, trimmedQuery)
 }
 
 function dedupeMarkets(markets: PredictionMarket[]): PredictionMarket[] {
@@ -85,7 +98,8 @@ async function searchLiveDflowMarkets(
     ? await searchDflowEvents(trimmedQuery)
     : await listDflowEvents()
 
-  return flattenDflowEvents(response.events, env.usdcMint).slice(0, 12)
+  const markets = flattenDflowEvents(response.events, env.usdcMint)
+  return finalizeMarkets(markets, trimmedQuery)
 }
 
 export async function searchPredictionMarkets(
@@ -130,8 +144,30 @@ export async function searchPredictionMarkets(
     // Fall through to simulated fixtures.
   }
 
+  // Only use simulated fixtures when the query is empty or clearly matches
+  // a fixture topic — never substitute bitcoin for an unrelated ask.
+  const simulated = searchSimulatedMarkets(query || 'market')
+  const trimmedQuery = query.trim()
+  if (trimmedQuery) {
+    const relevant = filterAndRankMarkets(simulated, trimmedQuery)
+    if (relevant.length === 0) {
+      return {
+        markets: [],
+        isSimulated: true,
+        message: `No open markets matched “${trimmedQuery}.”`,
+      }
+    }
+
+    return {
+      markets: relevant.slice(0, 12),
+      isSimulated: true,
+      message:
+        'Live market search is unavailable. Showing simulated fallback markets.',
+    }
+  }
+
   return {
-    markets: searchSimulatedMarkets(query || 'market'),
+    markets: simulated.slice(0, 12),
     isSimulated: true,
     message:
       'Live market search is unavailable. Showing simulated fallback markets.',

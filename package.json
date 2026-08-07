@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test:api": "tsx scripts/test-local-api.ts",
+    "test:market-match": "tsx scripts/test-market-match.ts",
     "dev:vercel": "vercel dev"
   },
   "dependencies": {

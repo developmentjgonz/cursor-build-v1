@@ -1,4 +1,7 @@
-import type { PredictionMarket } from '../../../shared/contracts/prediction-market'
+import {
+  findBestMarketMatch,
+  parsePredictionOutcome,
+} from '../../../shared/prediction/market-match'
 import {
   createMockSwapQuote,
   mockHoldings,
@@ -262,19 +265,26 @@ async function createMarketsReply(prompt: string): Promise<DiloReply> {
 async function createPredictionReply(prompt: string): Promise<DiloReply> {
   const amountMatch = amountPattern.exec(prompt)
   const amountUsd = amountMatch ? Number(amountMatch[1]) : 2
-  const outcome = /\bno\b/i.test(prompt) ? 'NO' : 'YES'
+  const outcome = parsePredictionOutcome(prompt)
   const marketQuery = extractMarketQuery(prompt)
+
+  if (!marketQuery) {
+    return {
+      text: 'Which market do you want to bet on? Name a topic like bitcoin, the Fed, or a team.',
+      followUps: ['Show me open markets', 'Show me bitcoin markets'],
+    }
+  }
 
   try {
     const result = await searchPredictionMarkets({
-      query: marketQuery || 'bitcoin',
+      query: marketQuery,
     })
-    const market = findBestMarket(result.markets, prompt)
+    const market = findBestMarketMatch(result.markets, prompt, marketQuery)
 
     if (!market) {
       return {
-        text: 'I could not match that to an open market. Ask me to show markets for a topic first.',
-        followUps: ['Show me open markets', 'Show me bitcoin markets'],
+        text: `I could not match “${marketQuery}” to an open market. Ask me to show markets for that topic first.`,
+        followUps: ['Show me open markets', `Show me ${marketQuery} markets`],
       }
     }
 
@@ -325,38 +335,4 @@ function looksLikeMarketTopic(prompt: string): boolean {
   return /btc|bitcoin|eth|ethereum|solana|\bfed\b|fomc|rate cut|trump|election|nba|nfl|sports/i.test(
     prompt,
   )
-}
-
-function findBestMarket(
-  markets: readonly PredictionMarket[],
-  prompt: string,
-): PredictionMarket | undefined {
-  if (markets.length === 0) {
-    return undefined
-  }
-
-  const normalizedPrompt = prompt.toLowerCase()
-  const quotedTitle = quotedTitlePattern.exec(prompt)?.[1]?.toLowerCase()
-
-  if (quotedTitle) {
-    const exact = markets.find(
-      (market) => market.title.toLowerCase() === quotedTitle,
-    )
-    if (exact) {
-      return exact
-    }
-
-    const partial = markets.find((market) =>
-      market.title.toLowerCase().includes(quotedTitle),
-    )
-    if (partial) {
-      return partial
-    }
-  }
-
-  const titleMatch = markets.find((market) =>
-    normalizedPrompt.includes(market.title.toLowerCase()),
-  )
-
-  return titleMatch ?? markets[0]
 }

@@ -1,5 +1,6 @@
 import type { Intent } from '../../../shared/contracts/intent'
 import type { PredictionMarket } from '../../../shared/contracts/prediction-market'
+import { findBestMarketMatch } from '../../../shared/prediction/market-match'
 import {
   createMockSwapQuote,
   mockHoldings,
@@ -14,7 +15,6 @@ import type { MockWalletSnapshot } from '../wallet/use-mock-wallet'
 import type { DiloReply } from './chat-types'
 import { explainPredictionQuote, explainSwapQuote } from './mock-trade'
 
-const quotedTitlePattern = /["“](.+?)["”]/
 const fallbackWalletSnapshot: MockWalletSnapshot = {
   isConnected: true,
   address: null,
@@ -79,15 +79,24 @@ async function preparePredictionTrade(
   prompt: string,
   intent: Extract<Intent, { kind: 'prediction' }>,
 ): Promise<DiloReply> {
+  const marketQuery = intent.marketQuery.trim()
+
+  if (!marketQuery) {
+    return {
+      text: 'Which market do you want to bet on? Name a topic like bitcoin, the Fed, or a team.',
+      followUps: ['Show me open markets', 'Show me bitcoin markets'],
+    }
+  }
+
   const result = await searchPredictionMarkets({
-    query: intent.marketQuery || 'bitcoin',
+    query: marketQuery,
   })
-  const market = findBestMarket(result.markets, prompt, intent.marketQuery)
+  const market = findBestMarketMatch(result.markets, prompt, marketQuery)
 
   if (!market) {
     return {
-      text: 'I could not match that to an open market. Ask me to show markets for a topic first.',
-      followUps: ['Show me open markets', 'Show me bitcoin markets'],
+      text: `I could not match “${marketQuery}” to an open market. Ask me to show markets for that topic first.`,
+      followUps: ['Show me open markets', `Show me ${marketQuery} markets`],
     }
   }
 
@@ -159,49 +168,4 @@ async function prepareSwapTrade(
     },
     followUps: ['Yes, confirm the swap', 'Show me open markets'],
   }
-}
-
-function findBestMarket(
-  markets: readonly PredictionMarket[],
-  prompt: string,
-  marketQuery: string,
-): PredictionMarket | undefined {
-  if (markets.length === 0) {
-    return undefined
-  }
-
-  const normalizedPrompt = prompt.toLowerCase()
-  const quotedTitle = quotedTitlePattern.exec(prompt)?.[1]?.toLowerCase()
-  const normalizedQuery = marketQuery.toLowerCase()
-
-  if (quotedTitle) {
-    const exact = markets.find(
-      (market) => market.title.toLowerCase() === quotedTitle,
-    )
-    if (exact) {
-      return exact
-    }
-
-    const partial = markets.find((market) =>
-      market.title.toLowerCase().includes(quotedTitle),
-    )
-    if (partial) {
-      return partial
-    }
-  }
-
-  const queryMatch = markets.find(
-    (market) =>
-      market.title.toLowerCase().includes(normalizedQuery) ||
-      normalizedQuery.includes(market.title.toLowerCase()),
-  )
-  if (queryMatch) {
-    return queryMatch
-  }
-
-  const titleMatch = markets.find((market) =>
-    normalizedPrompt.includes(market.title.toLowerCase()),
-  )
-
-  return titleMatch ?? markets[0]
 }

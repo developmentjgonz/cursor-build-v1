@@ -7,7 +7,6 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useEffect } from 'react'
 
 import type { TrendingToken } from '../../../shared/contracts/token'
 import { DiloAvatar, type DiloMood } from '../../components/dilo/dilo-avatar'
@@ -93,14 +92,6 @@ export function AskHome({
   const copy = statusCopy[voice.status]
   const mood = moodByStatus[voice.status] ?? 'waving'
 
-  const stopVoice = voice.stop
-
-  useEffect(() => {
-    return () => {
-      stopVoice()
-    }
-  }, [stopVoice])
-
   function handleBeginVoice() {
     if (!voice.isSupported) {
       onOpenChat()
@@ -115,7 +106,7 @@ export function AskHome({
   }
 
   function handleOpenChat() {
-    voice.stop()
+    // Keep the shared financial voice session alive across Ask home ↔ chat.
     onOpenChat()
   }
 

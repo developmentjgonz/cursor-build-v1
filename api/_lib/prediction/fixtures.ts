@@ -1,6 +1,7 @@
 import type { PredictionMarket } from '../../../shared/contracts/prediction-market.js'
 import type { PredictionIntent } from '../../../shared/contracts/intent.js'
 import type { PredictionQuote } from '../../../shared/contracts/quote.js'
+import { filterAndRankMarkets } from '../../../shared/prediction/market-match.js'
 
 const SIMULATED_MARKETS: PredictionMarket[] = [
   {
@@ -41,34 +42,14 @@ const SIMULATED_MARKETS: PredictionMarket[] = [
   },
 ]
 
-function normalize(value: string): string {
-  return value.trim().toLowerCase()
-}
-
-function scoreMarket(query: string, market: PredictionMarket): number {
-  const normalizedQuery = normalize(query)
-  const haystack = normalize(`${market.id} ${market.title}`)
-  const tokens = normalizedQuery.split(/\s+/).filter(Boolean)
-
-  if (tokens.length === 0) {
-    return 0
+export function searchSimulatedMarkets(query: string): PredictionMarket[] {
+  const trimmedQuery = query.trim()
+  if (!trimmedQuery || trimmedQuery.toLowerCase() === 'market') {
+    return SIMULATED_MARKETS.slice(0, 3)
   }
 
-  return tokens.reduce((score, token) => {
-    return haystack.includes(token) ? score + 1 : score
-  }, 0)
-}
-
-export function searchSimulatedMarkets(query: string): PredictionMarket[] {
-  const ranked = SIMULATED_MARKETS.map((market) => ({
-    market,
-    score: scoreMarket(query, market),
-  }))
-    .filter(({ score }) => score > 0)
-    .sort((left, right) => right.score - left.score)
-    .map(({ market }) => market)
-
-  return ranked.length > 0 ? ranked : SIMULATED_MARKETS.slice(0, 3)
+  const ranked = filterAndRankMarkets(SIMULATED_MARKETS, trimmedQuery)
+  return ranked
 }
 
 export function getSimulatedMarket(marketId: string): PredictionMarket | null {

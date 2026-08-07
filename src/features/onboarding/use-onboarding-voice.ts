@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 
 import { createRealtimeSession } from '../../lib/voice/realtime-service'
+import { diloRealtimeSessionConfig } from '../../lib/voice/realtime-session-config'
 import { diloPersona } from '../chat/dilo-persona'
 import type { DepositMethodId } from '../funding/deposit-model'
 import type {
@@ -61,6 +62,8 @@ interface GlobalOnboardingVoice {
   startToken: number
   hasGreeted: boolean
   lastScene: string
+  /** Scene waiting to be delivered once Dilo finishes speaking. */
+  pendingScene: string | null
   isStarting: boolean
   options: UseOnboardingVoiceOptions | null
   listeners: Set<() => void>
@@ -80,6 +83,7 @@ const globalVoice: GlobalOnboardingVoice = ((
   startToken: 0,
   hasGreeted: false,
   lastScene: '',
+  pendingScene: null,
   isStarting: false,
   options: null,
   listeners: new Set(),
@@ -160,13 +164,40 @@ function describeScene(
 
 function publishGlobalVoice(
   patch: Partial<
-    Pick<GlobalOnboardingVoice, 'status' | 'errorMessage' | 'session' | 'hasGreeted' | 'lastScene' | 'isStarting'>
+    Pick<
+      GlobalOnboardingVoice,
+      | 'status'
+      | 'errorMessage'
+      | 'session'
+      | 'hasGreeted'
+      | 'lastScene'
+      | 'pendingScene'
+      | 'isStarting'
+    >
   >,
 ): void {
   Object.assign(globalVoice, patch)
   for (const listener of globalVoice.listeners) {
     listener()
   }
+}
+
+function flushPendingScene(): void {
+  const pendingScene = globalVoice.pendingScene
+  if (!pendingScene || !globalVoice.session) {
+    return
+  }
+
+  if (pendingScene === globalVoice.lastScene) {
+    globalVoice.pendingScene = null
+    return
+  }
+
+  globalVoice.lastScene = pendingScene
+  globalVoice.pendingScene = null
+  globalVoice.session.sendMessage(
+    `System update (do not restart your intro; finish your thought only if needed, then guide this screen): ${pendingScene}`,
+  )
 }
 
 function stopGlobalSession(): void {
@@ -178,6 +209,7 @@ function stopGlobalSession(): void {
     errorMessage: null,
     hasGreeted: false,
     lastScene: '',
+    pendingScene: null,
     isStarting: false,
   })
 }
@@ -376,6 +408,7 @@ async function startGlobalSession(): Promise<void> {
     const session = new RealtimeSession(agent, {
       model: 'gpt-realtime-2.1',
       transport: 'webrtc',
+      config: diloRealtimeSessionConfig,
     })
 
     const guidedSession: GuidedSession = {
@@ -393,6 +426,7 @@ async function startGlobalSession(): Promise<void> {
     session.on('agent_tool_end', () => {
       if (globalVoice.session === guidedSession) {
         publishGlobalVoice({ status: 'listening' })
+        flushPendingScene()
       }
     })
     session.on('audio_start', () => {
@@ -403,6 +437,7 @@ async function startGlobalSession(): Promise<void> {
     session.on('audio_stopped', () => {
       if (globalVoice.session === guidedSession) {
         publishGlobalVoice({ status: 'listening' })
+        flushPendingScene()
       }
     })
     session.on('error', ({ error }) => {
@@ -471,12 +506,30 @@ function notifyScene(
 
   const scene = describeScene(phase, fundingStep, isWalletConnected)
 
+  if (scene === globalVoice.lastScene && !globalVoice.pendingScene) {
+    return
+  }
+
   if (scene === globalVoice.lastScene) {
+    globalVoice.pendingScene = null
+    return
+  }
+
+  // Never barge into Dilo mid-sentence with a screen change. Queue the scene
+  // and deliver it when she finishes speaking or a tool turn ends.
+  const isBusy =
+    globalVoice.status === 'speaking' || globalVoice.status === 'processing'
+
+  if (isBusy) {
+    globalVoice.pendingScene = scene
     return
   }
 
   globalVoice.lastScene = scene
-  globalVoice.session.sendMessage(`System update: ${scene}`)
+  globalVoice.pendingScene = null
+  globalVoice.session.sendMessage(
+    `System update (do not restart your intro; briefly adapt to this screen): ${scene}`,
+  )
 }
 
 export function useOnboardingVoice(
